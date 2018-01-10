@@ -1,0 +1,17 @@
+{
+  "name": "write-code",
+  "version": "0.0.0",
+  "description": "Programming for more people",
+  "main": "second-editor.js",
+  "dependencies": {
+    "module-library": "*",
+    "web-site": "*",
+    "web-element": "*",
+    "browser-bridge": "*",
+    "add-html": "*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/erikpukinskis/write-code.git"
+  }
+}
