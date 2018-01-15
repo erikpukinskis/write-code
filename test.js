@@ -2,7 +2,6 @@
 
 done(
   I type f
-  the program is "f"
   I see "f"
   (three tokens)
 
@@ -27,20 +26,15 @@ we're back to the empty function
 I type enter
 I see function ( ▢ ) {
   ▢ }
-The program is still empty
 
 I type hello
 I see function ( ▢ ) {
-  "hello" }
-The program is function() {
   "hello" }
 
 I type (
 I see function ( ▢ ) {
   hello (
     ▢ ) }
-The program is function() {
-  hello() }
 
 I type 42
 I see function ( ▢ ) {
@@ -54,5 +48,5 @@ I see function ( ▢ ) {
 
 Start over
 
-I type var 
+I type var [space]
 var is its own token

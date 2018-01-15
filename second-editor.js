@@ -7,8 +7,19 @@ library.using(
     var bridge = new BrowserBridge()
 
     var isToken = bridge.defineFunction(
-      function isToken(node) {
-        return node.classList && node.classList.contains("token")})
+      function isToken(node, token) {
+        if (!node || !node.classList) {
+          return false }
+
+        if (token && !classFor(token)) {
+          return false }
+
+        var hasClassForToken = node.classList.contains(classFor(token))
+
+        if (token && !hasClassForToken) {
+          return false }
+
+        return node.classList.contains("token") })
 
     var setIntroTokens = bridge.defineFunction(
       [addHtml.defineOn(bridge), isToken],
@@ -20,11 +31,12 @@ library.using(
         for(var i=2; i<arguments.length; i++) {
           var expectedToken = arguments[i]
           var node = editable.childNodes[childPosition]
-          var isExpectedToken = isToken(node) && node.textContent == expectedToken
+
+          var isExpectedToken = isToken(node, expectedToken)
 
           if (!isExpectedToken) {
-            var classes = "token"
-            if (expectedToken == "\"") {
+            var classes = "token "+classFor(expectedToken)
+            if (expectedToken == "\"" || expectedToken == "function") {
               classes += " open"
             }
             addHtml.before(node, "<div class=\""+classes+"\">"+expectedToken+"</div>")
@@ -42,11 +54,36 @@ library.using(
       })
 
 
+    var classFor = bridge.defineFunction(
+      function classFor(token) {
+        var className = {
+          "function": "function",
+          "\"": "quote",
+          "{": "left-curly",
+          "}": "right-curly",
+          "(": "left-paren",
+          ")": "right-paren",
+          "var": "var",
+          "=": "equals",
+          ":": "colon",
+          "+": "plus",
+          "-": "minus",
+          "/": "divided-by",
+          "*": "times",
+        }[token]
+
+        if (!className) {
+          return null }
+
+        return className })
+
     var setOutroTokens = bridge.defineFunction(
-      [addHtml.defineOn(bridge), isToken],
-      function setOutroTokens(addHtml, isToken, token1, token2, etc) {
-        var tokenCount = arguments.length - 1
-        var tokenIndex = tokenCount
+      [addHtml.defineOn(bridge), isToken, classFor],
+      function setOutroTokens(addHtml, isToken, classFor, token1, token2, etc) {
+        var lastDependency = classFor
+        var dependencyCount = 3
+        var tokenCount = arguments.length - dependencyCount
+        var tokenIndex = arguments.length - 1
         var editable = document.querySelector(".line")
         var childCount = editable.childNodes.length
         var expectedToken = arguments[tokenIndex]
@@ -60,12 +97,12 @@ library.using(
 
           var node = editable.childNodes[testNodeIndex]
 
-          var isExpectedToken = isToken(node) && node.innerText == expectedToken
+          var isExpectedToken = isToken(node, expectedToken)
 
           if (isExpectedToken) {
             testNodeIndex--
           } else {
-            var classes = "token"
+            var classes = "token "+classFor(expectedToken)
             if (expectedToken == "\"") {
               classes += " close"
             }
@@ -74,7 +111,8 @@ library.using(
           }
           tokenIndex--
           var expectedToken = arguments[tokenIndex]
-        } while(expectedToken != isToken)
+          var ranOutOfTokens = expectedToken == lastDependency
+        } while(!ranOutOfTokens)
 
         while(node = editable.childNodes[testNodeIndex]) {
           if (isToken(node)) {
@@ -89,17 +127,22 @@ library.using(
 
 
     var parse = bridge.defineFunction(
-      [setIntroTokens, setOutroTokens],
-      function parse(setIntroTokens, setOutroTokens) {
+      [isToken, setIntroTokens, setOutroTokens],
+      function parse(isToken, setIntroTokens, setOutroTokens) {
         var editable = document.querySelector(".line")
         var editableText = editable.innerText
-        var functionLiteral = editableText.match(/^"?function(\s.*)$/)
+        var functionLiteral = editableText.match(/^"?function([\s(].*)$/)
         var stringLiteral = editableText.match(/^"?(.*)"?,?$/)
+        var gotFunctionTokenAlready = isToken(editable.childNodes[0], "function")
+
+        if (isToken(editable.childNodes[0], "function")) {
+          // debugger
+        }
 
         if (functionLiteral) {
           var remainder = trimTrailingQuote(functionLiteral[1])
 
-          setIntroTokens("function&nbsp;")
+          setIntroTokens("function")
 
           setOutroTokens("(", ")", "{", "}")
 
@@ -109,7 +152,11 @@ library.using(
             throw new Error("not text?")
           }
 
-          shouldBeText.textContent = shouldBeText.textContent.substr("function ".length)
+          if (!gotFunctionTokenAlready) {
+            shouldBeText.textContent = shouldBeText.textContent.substr("function".length)
+
+            setSelection(shouldBeText, shouldBeText.textContent.length)
+          }
 
         } else {
           setIntroTokens("\"")
@@ -123,6 +170,16 @@ library.using(
           } else {
             return text
           }
+        }
+
+        function setSelection(node, selectionStart) {
+          var range = document.createRange()
+          range.setStart(node, selectionStart)
+
+          var selection = window.getSelection()
+          selection.removeAllRanges()
+          selection.addRange(range)
+          console.log("add "+selectionStart+" range to "+node.outerHTML)
         }
 
       })

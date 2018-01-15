@@ -4,11 +4,11 @@
   "description": "Programming for more people",
   "main": "second-editor.js",
   "dependencies": {
+    "add-html": "*",
+    "browser-bridge": "^0.137.0",
     "module-library": "*",
-    "web-site": "*",
     "web-element": "*",
-    "browser-bridge": "*",
-    "add-html": "*"
+    "web-site": "*"
   },
   "repository": {
     "type": "git",
