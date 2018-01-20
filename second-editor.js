@@ -1,8 +1,10 @@
 var library = require("module-library")(require)
 
+// Todo:   capture enter keypress and start new string literal
+
 library.using(
-  ["browser-bridge", "web-site", "web-element", "add-html"],
-  function(BrowserBridge, site, element, addHtml) {
+  [library.ref(), "browser-bridge", "web-site", "web-element", "add-html", "bridge-module"],
+  function(lib, BrowserBridge, site, element, addHtml, bridgeModule) {
 
     var bridge = new BrowserBridge()
 
@@ -21,14 +23,44 @@ library.using(
 
         return node.classList.contains("token") })
 
+    var lines = bridge.defineSingleton(
+      "lines",
+      [bridgeModule(lib, "add-html", bridge)],
+      function(addHtml) {
+        var currentLine = 0
+
+        return {
+          up: function() {
+            currentLine--
+            return this.stay()
+          },
+          down: function() {
+            currentLine++
+            return this.stay()
+          },
+          stay: function() {
+            var el = document.querySelector(".line-"+currentLine)
+
+            if (!el) {
+              var html = "<div class=\"line line-"+currentLine+"\" contenteditable></div>";
+              var els = addHtml(html)
+              el = els[0]
+            }
+
+            return el
+          },
+        }
+      }
+    )
+
     var setIntroTokens = bridge.defineFunction(
-      [addHtml.defineOn(bridge), isToken],
-      function setIntroTokens(addHtml, isToken, token1, token2, etc) {
+      [addHtml.defineOn(bridge), isToken, lines],
+      function setIntroTokens(addHtml, isToken, lines, token1, token2, etc) {
 
-        var editable = document.querySelector(".line")
-
+        var editable = lines.stay()
+        var dependencyCount = 3
         var childPosition = 0
-        for(var i=2; i<arguments.length; i++) {
+        for(var i=dependencyCount; i<arguments.length; i++) {
           var expectedToken = arguments[i]
           var node = editable.childNodes[childPosition]
 
@@ -39,7 +71,12 @@ library.using(
             if (expectedToken == "\"" || expectedToken == "function") {
               classes += " open"
             }
-            addHtml.before(node, "<div class=\""+classes+"\">"+expectedToken+"</div>")
+            var html = "<div class=\""+classes+"\">"+expectedToken+"</div>"
+            if (node) {
+              addHtml.before(node, html)
+            } else {
+              addHtml.inside(editable, html)
+            }
           }
           childPosition++
         }
@@ -78,37 +115,41 @@ library.using(
         return className })
 
     var setOutroTokens = bridge.defineFunction(
-      [addHtml.defineOn(bridge), isToken, classFor],
-      function setOutroTokens(addHtml, isToken, classFor, token1, token2, etc) {
-        var lastDependency = classFor
-        var dependencyCount = 3
+      [addHtml.defineOn(bridge), isToken, classFor, lines],
+      function setOutroTokens(addHtml, isToken, classFor, lines, token1, token2, etc) {
+        var dependencyCount = 4
+        var lastDependency = arguments[dependencyCount - 1]
         var tokenCount = arguments.length - dependencyCount
         var tokenIndex = arguments.length - 1
-        var editable = document.querySelector(".line")
+        var editable = lines.stay()
         var childCount = editable.childNodes.length
         var expectedToken = arguments[tokenIndex]
 
         var testNodeIndex = childCount - 1
 
         do {
-          if (testNodeIndex < 0) {
-            break
+
+          var classes = "token "+classFor(expectedToken)
+          if (expectedToken == "\"") {
+            classes += " close"
           }
+          var html = "<quote class=\""+classes+"\">"+expectedToken+"</quote>"
 
-          var node = editable.childNodes[testNodeIndex]
+          if (testNodeIndex >= 0) {
+            var node = editable.childNodes[testNodeIndex]
 
-          var isExpectedToken = isToken(node, expectedToken)
+            var isExpectedToken = isToken(node, expectedToken)
 
-          if (isExpectedToken) {
-            testNodeIndex--
-          } else {
-            var classes = "token "+classFor(expectedToken)
-            if (expectedToken == "\"") {
-              classes += " close"
+            if (isExpectedToken) {
+              testNodeIndex--
+            } else {            
+              addHtml.after(node, html)
             }
 
-            addHtml.after(node, "<quote class=\""+classes+"\">"+expectedToken+"</quote>")
+          } else {
+            addHtml.inside(editable, html)
           }
+
           tokenIndex--
           var expectedToken = arguments[tokenIndex]
           var ranOutOfTokens = expectedToken == lastDependency
@@ -125,18 +166,35 @@ library.using(
 
       })
 
+    var moveAround = bridge.defineFunction(
+      [lines],
+      function moveAround(lines, event) {
+        if (event.key == "Enter") {
+          console.log("down")
+          var editable = lines.down()
+          editable.focus()
+          event.preventDefault()
+        }
+      }
+    )
 
     var parse = bridge.defineFunction(
-      [isToken, setIntroTokens, setOutroTokens],
-      function parse(isToken, setIntroTokens, setOutroTokens) {
-        var editable = document.querySelector(".line")
+      [isToken, setIntroTokens, setOutroTokens, lines],
+      function parse(isToken, setIntroTokens, setOutroTokens, lines, event) {
+
+        if (event.key == "Enter") {
+          return
+        }
+
+        var editable = lines.stay()
         var editableText = editable.innerText
+        if (editableText.length < 1) {
+          return }
         var functionLiteral = editableText.match(/^"?function([\s(].*)$/)
         var stringLiteral = editableText.match(/^"?(.*)"?,?$/)
         var gotFunctionTokenAlready = isToken(editable.childNodes[0], "function")
 
         if (isToken(editable.childNodes[0], "function")) {
-          // debugger
         }
 
         if (functionLiteral) {
@@ -144,7 +202,7 @@ library.using(
 
           setIntroTokens("function")
 
-          setOutroTokens("(", ")", "{", "}")
+          setOutroTokens("(", ")", "{")
 
           var shouldBeText = editable.childNodes[1]
 
@@ -157,6 +215,10 @@ library.using(
 
             setSelection(shouldBeText, shouldBeText.textContent.length)
           }
+
+          var editable = lines.down()
+          setOutroTokens("}")
+          lines.up()
 
         } else {
           setIntroTokens("\"")
@@ -184,15 +246,19 @@ library.using(
 
       })
 
+
     var line = element.template(
       ".line", {
       "contenteditable": "true",
-      "onkeyup": parse.evalable()},
+      "onkeydown": moveAround.withArgs(bridge.event).evalable(),
+      "onkeyup": parse.withArgs(bridge.event).evalable()},
       element.style({
         "margin-top": "0.5em",
-        "padding-bottom": "320px",
         "font-size": "30px",
-        "font-family": "sans-serif"}))
+        "font-family": "sans-serif"}),
+      function(id) {
+        this.addSelector(".line-"+id);
+      })
 
     var focus = element.style(
       ".line:focus", {
@@ -224,7 +290,7 @@ library.using(
       "get",
       "/",
       bridge.requestHandler([
-        line(),
+        line(0),
         element.stylesheet(line, token, focus)]))
 
     site.start(1413)
