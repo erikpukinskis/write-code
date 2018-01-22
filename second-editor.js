@@ -43,7 +43,7 @@ library.using(
 
             if (!el) {
               var html = "<div class=\"line line-"+currentLine+"\" contenteditable></div>";
-              var els = addHtml(html)
+              var els = addHtml.inside(document.querySelector(".editor"), html)
               el = els[0]
             }
 
@@ -117,6 +117,7 @@ library.using(
     var setOutroTokens = bridge.defineFunction(
       [addHtml.defineOn(bridge), isToken, classFor, lines],
       function setOutroTokens(addHtml, isToken, classFor, lines, token1, token2, etc) {
+        var args = arguments
         var dependencyCount = 4
         var lastDependency = arguments[dependencyCount - 1]
         var tokenCount = arguments.length - dependencyCount
@@ -126,6 +127,16 @@ library.using(
         var expectedToken = arguments[tokenIndex]
 
         var testNodeIndex = childCount - 1
+
+        function nextToken() {
+          tokenIndex--
+          var token = args[tokenIndex]
+          if (token == "\u200b") {
+            tokenIndex--
+            var token = args[tokenIndex]
+          }
+          return token
+        }
 
         do {
 
@@ -147,11 +158,10 @@ library.using(
             }
 
           } else {
-            addHtml.inside(editable, html)
+            addHtml.firstIn(editable, html)
           }
 
-          tokenIndex--
-          var expectedToken = arguments[tokenIndex]
+          var expectedToken = nextToken()
           var ranOutOfTokens = expectedToken == lastDependency
         } while(!ranOutOfTokens)
 
@@ -166,21 +176,33 @@ library.using(
 
       })
 
+    var setSelection = bridge.defineFunction(
+      function setSelection(node, selectionStart) {
+        var range = document.createRange()
+        range.setStart(node, selectionStart)
+
+        var selection = window.getSelection()
+        selection.removeAllRanges()
+        selection.addRange(range)
+      }
+    )      
+
     var moveAround = bridge.defineFunction(
-      [lines],
-      function moveAround(lines, event) {
+      [lines, setSelection],
+      function moveAround(lines, setSelection, event) {
         if (event.key == "Enter") {
-          console.log("down")
-          var editable = lines.down()
-          editable.focus()
           event.preventDefault()
+          var editable = lines.down()
+          var text = document.createTextNode("\u200b")
+          editable.prepend(text)
+          setSelection(text, 0)
         }
       }
     )
 
     var parse = bridge.defineFunction(
-      [isToken, setIntroTokens, setOutroTokens, lines],
-      function parse(isToken, setIntroTokens, setOutroTokens, lines, event) {
+      [isToken, setIntroTokens, setOutroTokens, lines, setSelection],
+      function parse(isToken, setIntroTokens, setOutroTokens, lines, setSelection, event) {
 
         if (event.key == "Enter") {
           return
@@ -188,41 +210,93 @@ library.using(
 
         var editable = lines.stay()
         var editableText = editable.innerText
-        if (editableText.length < 1) {
-          return }
-        var functionLiteral = editableText.match(/^"?function([\s(].*)$/)
-        var stringLiteral = editableText.match(/^"?(.*)"?,?$/)
-        var gotFunctionTokenAlready = isToken(editable.childNodes[0], "function")
 
-        if (isToken(editable.childNodes[0], "function")) {
+        var introMatch = editableText.match(/^[\u200b\(\)\{\}\(\)]+/)
+        var noText = introMatch && introMatch[0].length == editableText.length
+
+        if (introMatch && !noText) {
+          var introTokens = splitString(introMatch[0])
+          var sliceStart = introTokens.length
+        } else {
+          var introTokens = []
+          var sliceStart = 0
         }
 
-        if (functionLiteral) {
+        var outroMatch = editableText.match(/[\u200b\(\)\{\}\(\)]+$/)
+        if (outroMatch) {
+          var outroTokens = splitString(outroMatch[0])
+          var sliceEnd = editableText.length - outroTokens.length
+        } else {
+          var outroTokens = []
+          var sliceEnd = editableText.length
+        }
+
+        var sliceLength = sliceEnd - sliceStart
+
+        editableText = editableText.slice(sliceStart, sliceLength)
+
+        if (editableText.length < 1) {
+          return }
+
+        var emptyLine = editableText.length < 1
+        var functionLiteral = !emptyLine && editableText.match(/^"?function([\s].*)$/)
+
+        var functionCall = !functionLiteral && editableText.match(/^"?(\w+)[(](.*)$/)
+
+        if (!functionCall && editableText.length > 0) {
+          var stringLiteral = editableText }
+
+        var gotFunctionTokenAlready = isToken(editable.childNodes[0], "function")
+
+        if (functionCall) {
+          var functionName = functionCall[1]
+          var remainder = functionCall[2]
+
+          setIntroTokens()
+          setOutroTokens("(")
+
+          var textNode = editable.childNodes[0]
+          textNode.textContent = functionName
+
+          var editable = lines.down()
+
+          firstToken(outroTokens, ")")
+          setOutroTokens.apply(null, outroTokens)
+          var text = document.createTextNode("\u200b")
+          editable.prepend(text)
+          setSelection(text, 0)
+
+        } else if (functionLiteral) {
           var remainder = trimTrailingQuote(functionLiteral[1])
 
           setIntroTokens("function")
 
           setOutroTokens("(", ")", "{")
 
-          var shouldBeText = editable.childNodes[1]
-
-          if (shouldBeText.constructor.name != "Text") {
-            throw new Error("not text?")
-          }
+          var textNode = editable.childNodes[1]
 
           if (!gotFunctionTokenAlready) {
-            shouldBeText.textContent = shouldBeText.textContent.substr("function".length)
+            textNode.textContent = textNode.textContent.substr("function".length)
 
-            setSelection(shouldBeText, shouldBeText.textContent.length)
+            setSelection(textNode, textNode.textContent.length)
           }
 
           var editable = lines.down()
           setOutroTokens("}")
           lines.up()
 
-        } else {
+        } else if (stringLiteral) {
+          console.log("text is", stringLiteral)
           setIntroTokens("\"")
-          setOutroTokens("\"")
+
+          firstToken(outroTokens, "\"")
+          setOutroTokens.apply(null, outroTokens)
+        }
+
+        function firstToken(tokens, expectedToken) {
+          if (tokens[0] != expectedToken) {
+            tokens.unshift(expectedToken)
+          }
         }
 
         function trimTrailingQuote(text) {
@@ -234,34 +308,30 @@ library.using(
           }
         }
 
-        function setSelection(node, selectionStart) {
-          var range = document.createRange()
-          range.setStart(node, selectionStart)
-
-          var selection = window.getSelection()
-          selection.removeAllRanges()
-          selection.addRange(range)
-          console.log("add "+selectionStart+" range to "+node.outerHTML)
+        function splitString(string) {
+          var array = []
+          for(var i=0; i<string.length; i++) {
+            array.push(string[i])
+          }
+          return array
         }
 
       })
 
 
-    var line = element.template(
-      ".line", {
-      "contenteditable": "true",
-      "onkeydown": moveAround.withArgs(bridge.event).evalable(),
-      "onkeyup": parse.withArgs(bridge.event).evalable()},
-      element.style({
+    var line = element.template (
+      ".line",
+      element.style ( {
         "margin-top": "0.5em",
         "font-size": "30px",
-        "font-family": "sans-serif"}),
+        "font-family": "sans-serif",
+        "min-height": "1em" } ) ,
       function(id) {
-        this.addSelector(".line-"+id);
-      })
+        this.addSelector (
+          ".line-"+id ) } )
 
     var focus = element.style(
-      ".line:focus", {
+      ".editor:focus", {
       "outline": "none"})
 
     var token = element.style(
@@ -283,14 +353,23 @@ library.using(
 
     bridge.domReady(
       function() {
-        document.querySelector(".line").focus()
+        document.querySelector(".editor").focus()
       })
+
+    var editor = element(
+      ".editor" , {
+      "contenteditable": "true",
+      "onkeydown": moveAround.withArgs(bridge.event).evalable(),
+      "onkeyup": parse.withArgs(bridge.event).evalable() },
+      line(0) )
+
+
 
     site.addRoute(
       "get",
       "/",
       bridge.requestHandler([
-        line(0),
+        editor,
         element.stylesheet(line, token, focus)]))
 
     site.start(1413)
