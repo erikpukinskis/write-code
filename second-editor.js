@@ -323,6 +323,7 @@ library.using(
       ".line",
       element.style ( {
         "margin-top": "0.5em",
+        "margin-left": "1em",
         "font-size": "30px",
         "font-family": "sans-serif",
         "min-height": "1em" } ) ,
@@ -339,7 +340,8 @@ library.using(
         "background": "#EEF",
         "font-weight": "bold",
         "color": "#abd",
-        "margin": "0 0.25em",
+        "margin-left": "0.25em",
+        "margin-right": "0.25em",
         "display": "inline-block",
 
         ".open": {
@@ -348,6 +350,10 @@ library.using(
 
         ".close": {
           "margin-left": "0"
+        },
+
+        ":first-child": {
+          "margin-left": "0",
         },
       })
 
