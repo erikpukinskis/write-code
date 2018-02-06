@@ -2,9 +2,10 @@ var library = require("module-library")(require)
 
 // Todo:   capture enter keypress and start new string literal
 
-library.using(
-  [library.ref(), "browser-bridge", "web-site", "web-element", "add-html", "bridge-module"],
-  function(lib, BrowserBridge, site, element, addHtml, bridgeModule) {
+module.exports = library.export(
+  "write-code",
+  [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module"],
+  function(lib, BrowserBridge, element, addHtml, bridgeModule) {
 
     var bridge = new BrowserBridge()
 
@@ -325,7 +326,6 @@ library.using(
         "margin-top": "0.5em",
         "margin-left": "1em",
         "font-size": "30px",
-        "font-family": "sans-serif",
         "min-height": "1em" } ) ,
       function(id) {
         this.addSelector (
@@ -338,6 +338,7 @@ library.using(
     var token = element.style(
       ".token", {
         "background": "#EEF",
+        "font-family": "Arial, sans-serif",
         "font-weight": "bold",
         "color": "#abd",
         "margin-left": "0.25em",
@@ -369,16 +370,38 @@ library.using(
       "onkeyup": parse.withArgs(bridge.event).evalable() },
       line(0) )
 
+    var body = element.style(
+      "body",{
+      "font-family": "Georgia, serif",
+      "max-width": "30em",
+      "margin": "0 auto",
+      "background": "url(lightpaperfibers.png)",
+      "opacity": "0.8"})
 
-
-    site.addRoute(
-      "get",
-      "/",
-      bridge.requestHandler([
+    return function(site) {
+      var page = [
+        element("h1", "ezjs"),
         editor,
-        element.stylesheet(line, token, focus)]))
+        element.stylesheet(
+          body,
+          line,
+          token,
+          focus)]
 
-    site.start(1413)
+      if (!site.addRoute) {
+        debugger
+      }
+
+      site.addRoute(
+        "get",
+        "/",
+        bridge.requestHandler(page))
+
+      site.addRoute(
+        "get",
+        "/lightpaperfibers.png",
+        // Thanks Atle Mo of http://atle.co
+        site.sendFile(__dirname, "lightpaperfibers.png"))}
   }
 )
 

@@ -2,7 +2,7 @@
   "name": "write-code",
   "version": "0.5.0",
   "description": "Programming for more people",
-  "main": "second-editor.js",
+  "main": "write-code.js",
   "dependencies": {
     "add-html": "^0.25.0",
     "browser-bridge": "^0.138.0",
