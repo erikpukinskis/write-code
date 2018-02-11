@@ -319,18 +319,6 @@ module.exports = library.export(
 
         })
 
-
-      var line = element.template (
-        ".line",
-        element.style ( {
-          "margin-top": "0.5em",
-          "margin-left": "1em",
-          "font-size": "30px",
-          "min-height": "1em" } ) ,
-        function(id) {
-          this.addSelector (
-            ".line-"+id ) } )
-
       var focus = element.style(
         ".editor:focus", {
         "outline": "none"})
@@ -380,25 +368,40 @@ module.exports = library.export(
     }
 
 
+    var line = element.template (
+      ".line",
+      element.style ( {
+        "margin-top": "0.5em",
+        "margin-left": "1em",
+        "font-size": "30px",
+        "min-height": "1em" } ) ,
+      function(id) {
+        this.addSelector (
+          ".line-"+id ) } )
+
     var editor = element(
       ".editor" , {
-      "contenteditable": "true",
-      "onkeydown": moveAround.withArgs(bridge.event).evalable(),
-      "onkeyup": parse.withArgs(bridge.event).evalable() },
-      line(0) )
+      "contenteditable": "true"},
+      line(0),
+      function(bridge) {
+     
+        this.addAttributes({
+          "onkeydown": moveAround.withArgs(bridge.event).evalable(),
+          "onkeyup": parse.withArgs(bridge.event).evalable()})
+     })
 
     function prepareSite(site) {
       site.addRoute(
         "get",
         "/lightpaperfibers.png",
         // Thanks Atle Mo of http://atle.co
-        site.sendFile(__dirname, "lightpaperfibers.png"))}
+        site.sendFile(__dirname, "lightpaperfibers.png"))
     }
 
     function writeCode(bridge) {
       var page = [
         element("h1", "ezjs"),
-        editor,
+        editor(bridge),
         ]
 
       brige.send(page)
@@ -407,7 +410,7 @@ module.exports = library.export(
     writeCode.prepareBridge = prepareBridge
 
     writeCode.prepareSite = prepareSite
-    
+
     return writeCode
   }
 )

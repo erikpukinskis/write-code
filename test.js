@@ -9,6 +9,8 @@ runTest.library.define(
       var editor = this
       editor.done = done
       editor.expect = expect
+      editor.nextId = 0
+      editor.calledBack = {}
 
       browserTask(
         "http://localhost:1413",
@@ -17,7 +19,6 @@ runTest.library.define(
           var type = editor.type.bind(editor)
           var expect = editor.expect.bind(editor)
           callback(type, expect)
-          editor.wait(done)
         }
       )
     }
@@ -33,17 +34,27 @@ runTest.library.define(
       for(var i=0; i<arguments.length; i++) {
         var key = arguments[i]
         console.log("TYPE", key)
+
+        var callbackId = this.nextId
+        this.calledBack[callbackId] = false
+        var callback = tryToDie.bind(this, callbackId)
+
+        this.browser.pressKey(key, callback)
+
+        this.nextId++
       }
     }
 
-    EditorSession.prototype.wait = function(callback) {
-      var editor = this
-      console.log("WAITING...")
-      setTimeout(function() {
-        console.log("...DONE")
-        editor.browser.done()
-        editor.done()
-      }, 200)
+    function tryToDie(callbackId) {
+      debugger
+      this.calledBack[callbackId] = true
+      for(var id in this.callbackStatus) {
+        if (!calledBack[id]) {
+          return
+        }
+      }
+      this.done()
+      this.browser.done()
     }
 
     return EditorSession
@@ -52,8 +63,11 @@ runTest.library.define(
 
 runTest(
   "function call",
-  ["editor-session"],
-  function(expect, done, EditorSession) {
+  [".", "web-site", "editor-session"],
+  function(expect, done, writeCode, WebSite, EditorSession) {
+    var site = new WebSite()
+    var start = site.start(1414)
+    writeCode(start)
     new EditorSession(expect, done, function(type, expect) {
       type("a")
       expect("\"a\"")
@@ -65,8 +79,9 @@ runTest(
 
 // runTest(
 //   "function call argument",
-//   ["editor-session"],
-//   function(expect, done, EditorSession) {
+//   [".", "web-site", "editor-session"],
+//   function(expect, done, writeCode, WebSite, EditorSession) {
+//     writeCode(new WebSite().start(1415))
 //     new EditorSession(expect, done, function(type, expect) {
 //       type("a", "(", "b")
 //       expect("a(","\"b\")")
@@ -76,8 +91,9 @@ runTest(
 
 // runTest(
 //   "function literal",
-//   ["editor-session"],
-//   function(expect, done, EditorSession) {
+//   [".", "web-site", "editor-session"],
+//   function(expect, done, writeCode, WebSite, EditorSession) {
+//     writeCode(new WebSite().start(1416))
 //     new EditorSession(expect, done, function(type, expect) {
 //       type("f", "u", "n", "c", "t", "i", "o", "n", " ")
 //       expect("function (){", "}")
@@ -87,8 +103,9 @@ runTest(
 
 // runTest(
 //   "function name",
-//   ["editor-session"],
-//   function(expect, done, EditorSession) {
+//   [".", "web-site", "editor-session"],
+//   function(expect, done, writeCode, WebSite, EditorSession) {
+//     writeCode(new WebSite().start(1417))
 //     new EditorSession(expect, done, function(type, expect) {
 //       type("f", "u", "n", "c", "t", "i", "o", "n", " ", "f")
 //       expect("function f(){", "}")
@@ -98,8 +115,9 @@ runTest(
 
 // runTest(
 //   "function call inside function literal",
-//   ["editor-session"],
-//   function(expect, done, EditorSession) {
+//   [".", "web-site", "editor-session"],
+//   function(expect, done, writeCode, WebSite, EditorSession) {
+//     writeCode(new WebSite().start(1418))
 //     new EditorSession(expect, done, function(type, expect) {
 //       type("f", "u", "n", "c", "t", "i", "o", "n", " ", "a", "enter")
 //       expect("function a(){", "}")
