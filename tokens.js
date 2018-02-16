@@ -46,7 +46,7 @@ module.exports = library.export(
     function setIntroTokens(token1, token2, etc) {
 
       var editable = lines.stay()
-      var dependencyCount = 3
+      var dependencyCount = 0
       var childPosition = 0
       for(var i=dependencyCount; i<arguments.length; i++) {
         var expectedToken = arguments[i]
@@ -80,7 +80,7 @@ module.exports = library.export(
 
     function setOutroTokens(token1, token2, etc) {
       var args = arguments
-      var dependencyCount = 4
+      var dependencyCount = 0
       var lastDependency = arguments[dependencyCount - 1]
       var tokenCount = arguments.length - dependencyCount
       var tokenIndex = arguments.length - 1
@@ -138,10 +138,41 @@ module.exports = library.export(
 
     }
 
+
+    function inIntroOf(text) {      
+      var introMatch = text.match(/^[\u200b\(\)\{\}\(\)"]+/)
+      var noText = introMatch && introMatch[0].length == text.length
+
+      if (introMatch && !noText) {
+        return splitString(introMatch[0])
+      } else {
+        return introTokens = []
+      }
+    }
+
+    function inOutroOf(text) {
+      var outroMatch = text.match(/[\u200b\(\)\{\}\(\)"]+$/)
+      if (outroMatch) {
+        return splitString(outroMatch[0])
+      } else {
+        return []
+      }
+    }
+
+    function splitString(string) {
+      var array = []
+      for(var i=0; i<string.length; i++) {
+        array.push(string[i])
+      }
+      return array
+    }
+
     return {
       isToken: isToken,
       setIntro: setIntroTokens,
       setOutro: setOutroTokens,
+      inIntroOf: inIntroOf,
+      inOutroOf: inOutroOf,
     }
   }
 )

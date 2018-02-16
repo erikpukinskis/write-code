@@ -19,36 +19,28 @@ module.exports = library.export(
       var editable = lines.stay()
       var editableText = editable.innerText
 
+      var introTokens = tokens.inIntroOf(editableText)
+  
+      var sliceStart = introTokens.length
+
+      var outroTokens = tokens.inOutroOf(editableText)
+
+      var sliceEnd = editableText.length - outroTokens.length
+
+      var sliceLength = sliceEnd - sliceStart
+
+      editableText = editableText.slice(sliceStart, sliceLength)
+
+
       if (lines.currentWords() == editableText) {
         return
       } else {
         lines.setCurrentWords(editableText)
       }
 
-      var introMatch = editableText.match(/^[\u200b\(\)\{\}\(\)]+/)
-      var noText = introMatch && introMatch[0].length == editableText.length
-
-      if (introMatch && !noText) {
-        var introTokens = splitString(introMatch[0])
-        var sliceStart = introTokens.length
-      } else {
-        var introTokens = []
-        var sliceStart = 0
+      if (editableText.match(/"/)) {
+        debugger
       }
-
-      var outroMatch = editableText.match(/[\u200b\(\)\{\}\(\)]+$/)
-      if (outroMatch) {
-        var outroTokens = splitString(outroMatch[0])
-        var sliceEnd = editableText.length - outroTokens.length
-      } else {
-        var outroTokens = []
-        var sliceEnd = editableText.length
-      }
-
-      var sliceLength = sliceEnd - sliceStart
-
-      editableText = editableText.slice(sliceStart, sliceLength)
-
       if (editableText.length < 1) {
         return }
 
@@ -102,7 +94,6 @@ module.exports = library.export(
       } else if (stringLiteral) {
         lines.setAttribute("kind", "string literal")
         lines.setAttribute("string", stringLiteral)
-        console.log("text is", stringLiteral)
         tokens.setIntro("\"")
 
         firstToken(outroTokens, "\"")
@@ -134,14 +125,6 @@ module.exports = library.export(
       } else {
         return text
       }
-    }
-
-    function splitString(string) {
-      var array = []
-      for(var i=0; i<string.length; i++) {
-        array.push(string[i])
-      }
-      return array
     }
 
     return editRenderLoop

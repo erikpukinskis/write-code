@@ -21,8 +21,10 @@ module.exports = library.export(
       this.tree = anExpression.tree()
 
       var universe = aWildUniverseAppeared(
-        "my-stuff", {
+        "expression-trees", {
         anExpression: "an-expression"})
+
+      universe.mute()
 
       this.tree.logTo(universe)
 
@@ -69,7 +71,10 @@ module.exports = library.export(
           newExpression)
         this.ids[this.currentLine] = newExpression.id
       } else {
-        this.tree.setAttribute(key, id, value)
+        var existing = this.tree.getAttribute(key, id)
+        if (value != existing) {
+          this.tree.setAttribute(key, id, value)
+        }
       }
     }
 

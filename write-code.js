@@ -93,9 +93,11 @@ module.exports = library.export(
           }
         )
 
+        var render = bridge.remember("write-code/edit-render-loop").withArgs(bridge.event).evalable()
+
         this.addAttributes({
-          "onkeydown": bridge.remember("write-code/edit-render-loop").withArgs(bridge.event).evalable(),
-          "onkeyup": bridge.remember("write-code/edit-render-loop").withArgs(bridge.event).evalable()})
+          "onkeydown": render,
+          "onkeyup": render})
      })
 
     function prepareSite(site) {
