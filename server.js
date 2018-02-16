@@ -1,88 +1,118 @@
-var WebSite = require("web-site")
-var childProcess = require("child_process")
-var writeCode = require("./")
-var BrowserBridge = require("browser-bridge")
-var makeRequest = require("make-request")
-var aWildUniverseAppeared = require("a-wild-universe-appeared")
-var anExpression = require("an-expression")
-var bridgeModule = require("bridge-module")
+var library = require ("module-library")(require)
 
-var site = new WebSite()
+library.define(
+  "save",[
+  "make-request"],
+  function(makeRequest) {
 
-writeCode.prepareSite(site)
+    function save(moduleIdentifier, functionName, args) {
 
-var programs = aWildUniverseAppeared(
-  "programs", {
-  anExpression: "an-expression"})
+      var data = {
+        functionName: functionName,
+        args: args,
+      }
 
-site.addRoute(
-  "post",
-  "/universes/expression-trees/:name",
-  function(request, response) {
-    var moduleName = request.params.name
-    var statement = request.body
+      var path = "/universes/expression-trees/"+moduleIdentifier
 
-    var doArgs = [statement.functionName].concat(statement.args)
+      makeRequest({
+        method: "post",
+        path: path,
+        data: data })
+    }
 
-    programs.do.apply(programs, doArgs)
-
-    response.send({ok: true})
+    return save
   }
 )
 
-site.addRoute(
-  "get",
-  "/write-code/:name",
-  function(request, response) {
+library.define(
+  "boot-tree",[
+  "a-wild-universe-appeared",
+  "an-expression",
+  "save"],
+  function(aWildUniverseAppeared, anExpression, save) {
 
-    var bridge = new BrowserBridge()
-      .forResponse(response)
+    function bootTree(name) {
+      var tree = this.tree = anExpression.tree()
+      var universe = aWildUniverseAppeared(
+        "expression-tree", {
+        anExpression: "an-expression"})
 
-    var save = bridge.defineFunction([
-      bridgeModule(lib, "make-request", bridge),
-      name],
-      function save(makeRequest, moduleIdentifier, functionName, args) {
+      universe.mute()
+      tree.logTo(universe)
 
-        var data = {
-          functionName: functionName,
-          args: args,
-        }
+      tree.addExpressionAt(
+        tree.reservePosition(),
+        anExpression.functionLiteral())
 
-        var path = "/universes/expression-trees/"+moduleIdentifier
+      universe.onStatement(save.bind(null, name))
 
-        makeRequest({
-          method: "post",
-          path: path,
-          data: data })})
+      return tree
+    }
 
-    var tree = bridge.defineSingleton(
-      "tree",[
-      bridgeModule(lib, "a-wild-universe-appeared", bridge),
-      bridgeModule(lib, "an-expression", bridge),
-      save],
-      function(aWildUniverseAppeared, anExpression, save) {
-
-        var tree = anExpression.tree()
-        var universe = aWildUniverseAppeared(
-          "expression-tree", {
-          anExpression: "an-expression"})
-
-        universe.mute()
-        tree.logTo(universe)
-
-        tree.addExpressionAt(
-          tree.reservePosition(),
-          anExpression.functionLiteral())
-
-        universe.onStatement(save)
-
-        return tree
-      })
-
-    writeCode(bridge, treeBinding)
+    return bootTree
   }
 )
 
-site.start(1413)
+library.using([
+  library.ref(),
+  "web-site",
+  "child_process",
+  "./",
+  "browser-bridge",
+  "make-request",
+  "a-wild-universe-appeared",
+  "an-expression",
+  "bridge-module"],
+  function(lib, WebSite, childProcess, writeCode, BrowserBridge, makeRequest, aWildUniverseAppeared, anExpression, bridgeModule) {
 
-// childProcess.exec("open http://localhost:1413")
+    var site = new WebSite()
+
+    writeCode.prepareSite(site)
+
+    var programs = aWildUniverseAppeared(
+      "programs", {
+      anExpression: "an-expression"})
+
+    site.addRoute(
+      "post",
+      "/universes/expression-trees/:name",
+      function(request, response) {
+        var moduleName = request.params.name
+        var statement = request.body
+
+        var doArgs = [statement.functionName].concat(statement.args)
+
+        programs.do.apply(programs, doArgs)
+
+        response.send({ok: true})
+      }
+    )
+
+    site.addRoute(
+      "get",
+      "/write-code/:name",
+      function(request, response) {
+
+        var bridge = new BrowserBridge()
+          .forResponse(response)
+
+        var name = request.params.name
+
+        var tree = bridge.defineSingleton(
+          "treeSingleton",[
+          bridgeModule(lib, "boot-tree", bridge),
+          name],
+          function(bootTree, name) {
+            return bootTree(name)
+          }
+        )
+
+        writeCode(bridge, tree)
+      }
+    )
+
+    site.start(1413)
+
+    childProcess.exec("open http://localhost:1413/write-code/hello-world")
+  }
+)

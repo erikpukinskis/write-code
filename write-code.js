@@ -5,7 +5,7 @@ var library = require("module-library")(require)
 module.exports = library.export(
   "write-code",
   [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module", "./edit-loop", "./lines", "a-wild-universe-appeared"],
-  function(lib, BrowserBridge, element, addHtml, bridgeModule, editLoop, lines, aWildUniverseAppeared) {
+  function(lib, BrowserBridge, element, addHtml, bridgeModule, editLoopXXXX, LinesXXXX, aWildUniverseAppeared) {
 
     function prepareBridge(bridge) {
 
@@ -94,23 +94,20 @@ module.exports = library.export(
 
       prepareBridge(bridge)
 
-      bridge.defineSingleton(
-        "editLoop",[
+      var lines = bridge.defineSingleton(
+        "lines",[
         bridgeModule(lib, "./lines", bridge),
-        treeBinding,
-        bridgeModule(lib, "./edit-loop", bridge)],
-        function(Lines, tree, editLoop) {
-          var lines = new Lines(tree)
-
-          return function(event) {
-            editLoop(lines, event)
-          }
+        treeBinding],
+        function(Lines, tree) {
+          return new Lines(tree)
         }
       )
 
+      var editLoop = bridgeModule(lib, "./edit-loop", bridge)
+
       var page = [
         element("h1", "ezjs"),
-        editor(bridge, editLoop.withArgs(bridge.even)),
+        editor(bridge, editLoop.withArgs(lines, bridge.event)),
       ]
 
       bridge.send(page)
