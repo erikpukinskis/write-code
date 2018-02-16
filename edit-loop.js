@@ -18,19 +18,12 @@ module.exports = library.export(
 
       var editable = lines.stay()
       var editableText = editable.innerText
-
       var introTokens = tokens.inIntroOf(editableText)
-  
       var sliceStart = introTokens.length
-
       var outroTokens = tokens.inOutroOf(editableText)
-
       var sliceEnd = editableText.length - outroTokens.length
-
       var sliceLength = sliceEnd - sliceStart
-
       editableText = editableText.slice(sliceStart, sliceLength)
-
 
       if (lines.currentWords() == editableText) {
         return
@@ -38,13 +31,11 @@ module.exports = library.export(
         lines.setCurrentWords(editableText)
       }
 
-      if (editableText.match(/"/)) {
-        debugger
-      }
       if (editableText.length < 1) {
         return }
 
       var emptyLine = editableText.length < 1
+
       var functionLiteral = !emptyLine && editableText.match(/^"?function([\s].*)$/)
 
       var functionCall = !functionLiteral && editableText.match(/^"?(\w+)[(](.*)$/)
@@ -132,6 +123,11 @@ module.exports = library.export(
       }
     }
 
-    return editLoop
+    return function() {
+      var args = arguments
+      setTimeout(function() {
+        editLoop.apply(null, args)
+      })
+    }
   }
 )

@@ -79,7 +79,7 @@ module.exports = library.export(
       function(bridge, editLoop) {
         this.addAttributes({
           "onkeydown": editLoop.evalable(),
-          "onkeyup": editLoop.evalable()})
+          "onkeypress": editLoop.evalable()})
      })
 
     function prepareSite(site) {
@@ -160,13 +160,13 @@ module.exports = library.export(
         })
 
       var editLoop = bridgeModule(lib, "./edit-loop", bridge).withArgs(lines, bridge.event)
-
-        bridge.asap(
-          [lines, name],
-          function(lines, name) {
-            lines.setIdentifier(name)
-          }
-        )
+      
+      bridge.asap(
+        [lines, name],
+        function(lines, name) {
+          lines.setIdentifier(name)
+        }
+      )
 
       var page = [
         element("h1", "ezjs"),
