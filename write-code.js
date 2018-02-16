@@ -12,14 +12,6 @@ module.exports = library.export(
       if (bridge.remember("write-code/editRenderLoop")) {
         return }
 
-      bridge.see(
-        "write-code/edit-render-loop",
-        bridgeModule(lib, "./edit-render-loop", bridge))
-
-      bridge.see(
-        "write-code/lines",
-        bridgeModule(lib, "./lines", bridge))
-
       var focus = element.style(
         ".editor:focus", {
         "outline": "none"})
@@ -84,20 +76,10 @@ module.exports = library.export(
       ".editor" , {
       "contenteditable": "true"},
       line(0),
-      function(bridge, name) {
-
-        bridge.asap(
-          [bridge.remember("write-code/lines"), name],
-          function(lines, name) {
-            lines.setIdentifier(name)
-          }
-        )
-
-        var render = bridge.remember("write-code/edit-render-loop").withArgs(bridge.event).evalable()
-
+      function(bridge, render) {
         this.addAttributes({
-          "onkeydown": render,
-          "onkeyup": render})
+          "onkeydown": render.evalable(),
+          "onkeyup": render.evalable()})
      })
 
     function prepareSite(site) {
@@ -113,7 +95,7 @@ module.exports = library.export(
 
       site.addRoute(
         "post",
-        "/universes/write-code/:name",
+        "/universes/expression-trees/:name",
         function(request, response) {
           var moduleName = request.params.name
           var statement = request.body
@@ -134,9 +116,61 @@ module.exports = library.export(
 
       prepareBridge(bridge)
 
+      var save = bridge.defineFunction([
+        bridgeModule(lib, "make-request", bridge),
+        name],
+        function save(makeRequest, moduleIdentifier, functionName, args) {
+
+          var data = {
+            functionName: functionName,
+            args: args,
+          }
+
+          var path = "/universes/expression-trees/"+moduleIdentifier
+
+          makeRequest({
+            method: "post",
+            path: path,
+            data: data })})
+
+      var lines = bridge.defineSingleton(
+        "lines",[
+        bridgeModule(lib, "./lines", bridge),
+        bridgeModule(lib, "a-wild-universe-appeared", bridge),
+        bridgeModule(lib, "an-expression", bridge)],
+        function(Lines, aWildUniverseAppeared, anExpression) {
+
+          var tree = anExpression.tree()
+          var universe = aWildUniverseAppeared(
+            "expression-tree", {
+            anExpression: "an-expression"})
+
+          universe.mute()
+          tree.logTo(universe)
+
+          tree.addExpressionAt(
+            tree.reservePosition(),
+            anExpression.functionLiteral())
+
+          universe.onStatement(save)
+
+          var lines = new Lines(tree)
+
+          return lines
+        })
+
+      var renderLoop = bridgeModule(lib, "./edit-render-loop", bridge).withArgs(lines, bridge.event)
+
+        bridge.asap(
+          [lines, name],
+          function(lines, name) {
+            lines.setIdentifier(name)
+          }
+        )
+
       var page = [
         element("h1", "ezjs"),
-        editor(bridge, name),
+        editor(bridge, renderLoop),
       ]
 
       bridge.send(page)

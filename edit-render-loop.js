@@ -2,10 +2,10 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "edit-render-loop",
-  ["./lines", "./tokens"],
-  function(lines, tokens) {
+  ["./tokens"],
+  function(tokens) {
 
-    function editRenderLoop(event) {
+    function editRenderLoop(lines, event) {
 
       if (event.key == "Enter") {
         event.preventDefault()
@@ -58,8 +58,8 @@ module.exports = library.export(
         var functionName = functionCall[1]
         var remainder = functionCall[2]
 
-        tokens.setIntro()
-        tokens.setOutro("(")
+        tokens.setIntro(editable, "(")
+        tokens.setOutro(editable, "(")
 
         var textNode = editable.childNodes[0]
         textNode.textContent = functionName
@@ -67,7 +67,9 @@ module.exports = library.export(
         var editable = lines.down()
 
         firstToken(outroTokens, ")")
-        tokens.setOutro.apply(null, outroTokens)
+        tokens.setOutro.apply(
+          tokens,
+          [editable].concat(outroTokens))
         var text = document.createTextNode("\u200b")
         editable.prepend(text)
         setSelection(text, 0)
@@ -75,9 +77,9 @@ module.exports = library.export(
       } else if (functionLiteral) {
         var remainder = trimTrailingQuote(functionLiteral[1])
 
-        tokens.setIntro("function")
+        tokens.setIntro(editable, "function")
 
-        tokens.setOutro("(", ")", "{")
+        tokens.setOutro(editable, "(", ")", "{")
 
         var textNode = editable.childNodes[1]
 
@@ -94,10 +96,13 @@ module.exports = library.export(
       } else if (stringLiteral) {
         lines.setAttribute("kind", "string literal")
         lines.setAttribute("string", stringLiteral)
-        tokens.setIntro("\"")
+        tokens.setIntro(editable, "\"")
 
         firstToken(outroTokens, "\"")
-        tokens.setOutro.apply(null, outroTokens)
+
+        tokens.setOutro.apply(
+          tokens,
+          [editable].concat(outroTokens))
       }
 
       // done with onEditorEvent

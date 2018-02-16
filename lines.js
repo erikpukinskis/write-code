@@ -13,45 +13,16 @@ module.exports = library.export(
 
     // we're confining the universe in here
 
-    function Lines() {
+    function Lines(tree) {
       this.identifier = null
       this.currentLine = 0
       this.ids = []
       this.words = []
-      this.tree = anExpression.tree()
-
-      var universe = aWildUniverseAppeared(
-        "expression-trees", {
-        anExpression: "an-expression"})
-
-      universe.mute()
-
-      this.tree.logTo(universe)
-
-      this.tree.addExpressionAt(
-        this.tree.reservePosition(),
-        anExpression.functionLiteral())
-
-      universe.onStatement(this.save.bind(this))
+      this.tree = tree
     }
 
     Lines.prototype.setIdentifier = function(identifier) {
       this.identifier = identifier
-    }
-
-    Lines.prototype.save = function(functionName, args) {
-
-      var data = {
-        functionName: functionName,
-        args: args,
-      }
-
-      var path = "/universes/write-code/"+this.identifier
-
-      makeRequest({
-        method: "post",
-        path: path,
-        data: data })
     }
 
     Lines.prototype.setAttribute =function(key, value) {
@@ -108,6 +79,6 @@ module.exports = library.export(
       return el
     }
 
-    return new Lines()
+    return Lines
   }
 )

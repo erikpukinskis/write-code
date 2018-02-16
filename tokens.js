@@ -2,8 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "tokens",
-  ["add-html", "lines"],
-  function(addHtml, lines) {  
+  ["add-html"],
+  function(addHtml) {  
 
     function isToken(node, token) {
       if (!node || !node.classList) {
@@ -43,15 +43,15 @@ module.exports = library.export(
       return className
     }
 
-    function setIntroTokens(token1, token2, etc) {
+    function setIntroTokens(editable, token1, token2, etc) {
 
-      var editable = lines.stay()
-      var dependencyCount = 0
+      var dependencyCount = 1
       var childPosition = 0
+
       for(var i=dependencyCount; i<arguments.length; i++) {
+
         var expectedToken = arguments[i]
         var node = editable.childNodes[childPosition]
-
         var isExpectedToken = isToken(node, expectedToken)
 
         if (!isExpectedToken) {
@@ -78,16 +78,14 @@ module.exports = library.export(
       }
     }
 
-    function setOutroTokens(token1, token2, etc) {
+    function setOutroTokens(editable,token1, token2, etc) {
       var args = arguments
-      var dependencyCount = 0
+      var dependencyCount = 1
       var lastDependency = arguments[dependencyCount - 1]
       var tokenCount = arguments.length - dependencyCount
       var tokenIndex = arguments.length - 1
-      var editable = lines.stay()
       var childCount = editable.childNodes.length
       var expectedToken = arguments[tokenIndex]
-
       var testNodeIndex = childCount - 1
 
       function nextToken() {
