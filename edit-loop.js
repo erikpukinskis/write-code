@@ -1,11 +1,11 @@
 var library = require("module-library")(require)
 
 module.exports = library.export(
-  "edit-render-loop",
+  "edit-loop",
   ["./tokens"],
   function(tokens) {
 
-    function editRenderLoop(lines, event) {
+    function editLoop(lines, event) {
 
       if (event.key == "Enter") {
         event.preventDefault()
@@ -132,6 +132,6 @@ module.exports = library.export(
       }
     }
 
-    return editRenderLoop
+    return editLoop
   }
 )

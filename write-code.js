@@ -4,8 +4,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module", "./edit-render-loop", "a-wild-universe-appeared"],
-  function(lib, BrowserBridge, element, addHtml, bridgeModule, editRenderLoop, aWildUniverseAppeared) {
+  [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module", "./edit-loop", "./lines", "a-wild-universe-appeared"],
+  function(lib, BrowserBridge, element, addHtml, bridgeModule, editLoop, lines, aWildUniverseAppeared) {
 
     function prepareBridge(bridge) {
 
@@ -76,10 +76,10 @@ module.exports = library.export(
       ".editor" , {
       "contenteditable": "true"},
       line(0),
-      function(bridge, render) {
+      function(bridge, editLoop) {
         this.addAttributes({
-          "onkeydown": render.evalable(),
-          "onkeyup": render.evalable()})
+          "onkeydown": editLoop.evalable(),
+          "onkeyup": editLoop.evalable()})
      })
 
     function prepareSite(site) {
@@ -159,7 +159,7 @@ module.exports = library.export(
           return lines
         })
 
-      var renderLoop = bridgeModule(lib, "./edit-render-loop", bridge).withArgs(lines, bridge.event)
+      var editLoop = bridgeModule(lib, "./edit-loop", bridge).withArgs(lines, bridge.event)
 
         bridge.asap(
           [lines, name],
@@ -170,7 +170,7 @@ module.exports = library.export(
 
       var page = [
         element("h1", "ezjs"),
-        editor(bridge, renderLoop),
+        editor(bridge, editLoop),
       ]
 
       bridge.send(page)
