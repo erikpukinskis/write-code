@@ -2,8 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "lines",
-  ["add-html", "an-expression", "a-wild-universe-appeared", "make-request"],
-  function(addHtml, anExpression, aWildUniverseAppeared, makeRequest) {
+  ["add-html", "an-expression"],
+  function(addHtml, anExpression) {
 
     // Not sure what lines is, except
 

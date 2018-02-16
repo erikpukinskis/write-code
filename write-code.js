@@ -83,94 +83,34 @@ module.exports = library.export(
      })
 
     function prepareSite(site) {
-      var programs = aWildUniverseAppeared(
-        "programs", {
-        anExpression: "an-expression"})
-
       site.addRoute(
         "get",
         "/lightpaperfibers.png",
         // Thanks Atle Mo of http://atle.co
         site.sendFile(__dirname, "lightpaperfibers.png"))
-
-      site.addRoute(
-        "post",
-        "/universes/expression-trees/:name",
-        function(request, response) {
-          var moduleName = request.params.name
-          var statement = request.body
-
-          var doArgs = [statement.functionName].concat(statement.args)
-
-          programs.do.apply(programs, doArgs)
-
-          response.send({ok: true})
-        }
-      )
     }
 
-    function writeCode(bridge, name) {
-      if (!name) {
-        name = "undefined"
-      }
+    function writeCode(bridge, treeBinding) {
 
       prepareBridge(bridge)
 
-      var save = bridge.defineFunction([
-        bridgeModule(lib, "make-request", bridge),
-        name],
-        function save(makeRequest, moduleIdentifier, functionName, args) {
-
-          var data = {
-            functionName: functionName,
-            args: args,
-          }
-
-          var path = "/universes/expression-trees/"+moduleIdentifier
-
-          makeRequest({
-            method: "post",
-            path: path,
-            data: data })})
-
-      var lines = bridge.defineSingleton(
-        "lines",[
+      bridge.defineSingleton(
+        "editLoop",[
         bridgeModule(lib, "./lines", bridge),
-        bridgeModule(lib, "a-wild-universe-appeared", bridge),
-        bridgeModule(lib, "an-expression", bridge)],
-        function(Lines, aWildUniverseAppeared, anExpression) {
-
-          var tree = anExpression.tree()
-          var universe = aWildUniverseAppeared(
-            "expression-tree", {
-            anExpression: "an-expression"})
-
-          universe.mute()
-          tree.logTo(universe)
-
-          tree.addExpressionAt(
-            tree.reservePosition(),
-            anExpression.functionLiteral())
-
-          universe.onStatement(save)
-
+        treeBinding,
+        bridgeModule(lib, "./edit-loop", bridge)],
+        function(Lines, tree, editLoop) {
           var lines = new Lines(tree)
 
-          return lines
-        })
-
-      var editLoop = bridgeModule(lib, "./edit-loop", bridge).withArgs(lines, bridge.event)
-      
-      bridge.asap(
-        [lines, name],
-        function(lines, name) {
-          lines.setIdentifier(name)
+          return function(event) {
+            editLoop(lines, event)
+          }
         }
       )
 
       var page = [
         element("h1", "ezjs"),
-        editor(bridge, editLoop),
+        editor(bridge, editLoop.withArgs(bridge.even)),
       ]
 
       bridge.send(page)
