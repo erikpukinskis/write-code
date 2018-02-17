@@ -1,35 +1,11 @@
 var library = require ("module-library")(require)
 
 library.define(
-  "save",[
-  "make-request"],
-  function(makeRequest) {
-
-    function save(moduleIdentifier, functionName, args) {
-
-      var data = {
-        functionName: functionName,
-        args: args,
-      }
-
-      var path = "/universes/expression-trees/"+moduleIdentifier
-
-      makeRequest({
-        method: "post",
-        path: path,
-        data: data })
-    }
-
-    return save
-  }
-)
-
-library.define(
   "boot-tree",[
   "a-wild-universe-appeared",
   "an-expression",
-  "save"],
-  function(aWildUniverseAppeared, anExpression, save) {
+  "make-request"],
+  function(aWildUniverseAppeared, anExpression, makeRequest) {
 
     function bootTree(name) {
       var tree = this.tree = anExpression.tree()
@@ -47,6 +23,21 @@ library.define(
       universe.onStatement(save.bind(null, name))
 
       return tree
+    }
+
+    function save(moduleIdentifier, functionName, args) {
+
+      var data = {
+        functionName: functionName,
+        args: args,
+      }
+
+      var path = "/universes/expression-trees/"+moduleIdentifier
+
+      makeRequest({
+        method: "post",
+        path: path,
+        data: data })
     }
 
     return bootTree

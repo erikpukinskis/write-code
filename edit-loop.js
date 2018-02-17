@@ -123,11 +123,6 @@ module.exports = library.export(
       }
     }
 
-    return function() {
-      var args = arguments
-      setTimeout(function() {
-        editLoop.apply(null, args)
-      })
-    }
+    return editLoop
   }
 )
