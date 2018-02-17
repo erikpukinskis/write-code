@@ -9,8 +9,10 @@ module.exports = library.export(
 
     function prepareBridge(bridge) {
 
-      if (bridge.remember("write-code/editRenderLoop")) {
+      if (bridge.remember("write-code")) {
         return }
+
+      bridge.see("write-code", true)
 
       var focus = element.style(
         ".editor:focus", {

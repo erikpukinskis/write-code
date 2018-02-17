@@ -4,15 +4,15 @@
   "description": "Programming for more people",
   "main": "write-code.js",
   "dependencies": {
+    "a-wild-universe-appeared": "^0.33.0",
     "add-html": "^0.25.0",
+    "an-expression": "*",
+    "bridge-module": "*",
     "browser-bridge": "^0.138.0",
+    "make-request": "*",
     "module-library": "*",
     "web-element": "*",
-    "web-site": "*",
-    "bridge-module": "*",
-    "an-expression": "*",
-    "a-wild-universe-appeared": "*",
-    "make-request": "*"
+    "web-site": "*"
   },
   "repository": {
     "type": "git",
