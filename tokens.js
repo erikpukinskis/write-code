@@ -47,6 +47,9 @@ module.exports = library.export(
 
     function unshiftCloser(editable, token) {
       var id = editable.className
+      if (!id) {
+        throw new Error("editable has no className")
+      }
       if (!closersByClassName[id]) {
         closersByClassName[id] = []
       }

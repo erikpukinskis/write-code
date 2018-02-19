@@ -8,6 +8,7 @@ module.exports = library.export(
     function editLoop(lines, event) {
 
       if (event.key == "Enter") {
+        debugger
         event.preventDefault()
         var editable = lines.down()
         var text = document.createTextNode("\u200b")
@@ -73,7 +74,6 @@ module.exports = library.export(
 
       } else if (functionLiteral) {
         // console.log("FUNCTION LITERAL")
-        var remainder = trimTrailingQuote(functionLiteral[1])
 
         tokens.setIntro(editable, "function")
 
@@ -88,7 +88,8 @@ module.exports = library.export(
         }
 
         var editable = lines.down()
-        tokens.setOutro("}")
+        tokens.unshiftCloser(editable, "}")
+        tokens.setOutro(editable)
         lines.up()
 
       } else if (stringLiteral) {
@@ -130,6 +131,9 @@ module.exports = library.export(
     var event
 
     return function(lines, newEvent) {
+      if (newEvent.key == "Enter") {
+        newEvent.preventDefault()
+      }
       event = newEvent
       if (debounce) {
         clearTimeout(debounce)
