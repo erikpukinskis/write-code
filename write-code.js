@@ -4,8 +4,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "web-element", "add-html", "bridge-module", "./edit-loop", "./lines"],
-  function(lib, element, addHtml, bridgeModule, editLoopXXXX, LinesXXXX) {
+  [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module", "./edit-loop", "./lines", "a-wild-universe-appeared"],
+  function(lib, BrowserBridge, element, addHtml, bridgeModule, editLoopXXXX, LinesXXXX, aWildUniverseAppeared) {
 
     function prepareBridge(bridge) {
 
@@ -48,10 +48,10 @@ module.exports = library.export(
 
       var body = element.style(
         "body",{
-        "font-family": "Georgia, serif",
+        "font-family": "sans-serif", //"Georgia, serif",
         "max-width": "30em",
         "margin": "0 auto",
-        "background": "url(/lightpaperfibers.png)",
+        // "background": "url(/lightpaperfibers.png)",
         "opacity": "0.8"})
 
       bridge.addToHead(
