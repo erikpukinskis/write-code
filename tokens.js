@@ -43,6 +43,16 @@ module.exports = library.export(
       return className
     }
 
+    var closersByClassName = {}
+
+    function unshiftCloser(editable, token) {
+      var id = editable.className
+      if (!closersByClassName[id]) {
+        closersByClassName[id] = []
+      }
+      closersByClassName[id].unshift(token)
+    }
+
     function setIntroTokens(editable, token1, token2, etc) {
 
       var dependencyCount = 1
@@ -79,21 +89,25 @@ module.exports = library.export(
     }
 
     function setOutroTokens(editable,token1, token2, etc) {
-      var args = arguments
-      var dependencyCount = 1
-      var lastDependency = arguments[dependencyCount - 1]
-      var tokenCount = arguments.length - dependencyCount
-      var tokenIndex = arguments.length - 1
+
+      var closers = closersByClassName[editable.className] || []
+
+      var provided = Array.prototype.slice.call(arguments, 1)
+
+      var tokens = provided.concat(closers)
+
+      var tokenCount = tokens.length
+      var tokenIndex = tokens.length - 1
       var childCount = editable.childNodes.length
-      var expectedToken = arguments[tokenIndex]
+      var expectedToken = tokens[tokenIndex]
       var testNodeIndex = childCount - 1
 
       function nextToken() {
         tokenIndex--
-        var token = args[tokenIndex]
+        var token = tokens[tokenIndex]
         if (token == "\u200b") {
           tokenIndex--
-          var token = args[tokenIndex]
+          var token = tokens[tokenIndex]
         }
         return token
       }
@@ -122,7 +136,7 @@ module.exports = library.export(
         }
 
         var expectedToken = nextToken()
-        var ranOutOfTokens = expectedToken == lastDependency
+        var ranOutOfTokens = tokenIndex < 0
       } while(!ranOutOfTokens)
 
       while(node = editable.childNodes[testNodeIndex]) {
@@ -149,7 +163,7 @@ module.exports = library.export(
     }
 
     function inOutroOf(text) {
-      var outroMatch = text.match(/[\u200b\(\)\{\}\(\)"]+$/)
+      var outroMatch = text.match(/[{}()\u200b"]+$/)
       if (outroMatch) {
         return splitString(outroMatch[0])
       } else {
@@ -171,6 +185,7 @@ module.exports = library.export(
       setOutro: setOutroTokens,
       inIntroOf: inIntroOf,
       inOutroOf: inOutroOf,
+      unshiftCloser: unshiftCloser,
     }
   }
 )

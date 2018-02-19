@@ -16,20 +16,27 @@ module.exports = library.export(
         return
       }
 
-      var editable = lines.stay()
-      var editableText = editable.innerText
-      var introTokens = tokens.inIntroOf(editableText)
-      var sliceStart = introTokens.length
-      var outroTokens = tokens.inOutroOf(editableText)
-      var sliceEnd = editableText.length - outroTokens.length
-      var sliceLength = sliceEnd - sliceStart
-      editableText = editableText.slice(sliceStart, sliceLength)
+      var editable = lines.stay(event)
+      var text = editable.innerText
 
-      if (lines.currentWords() == editableText) {
-        return
-      } else {
-        lines.setCurrentWords(editableText)
+      console.log("**>"+text+"<**")
+      var introTokens = tokens.inIntroOf(text)
+      var sliceStart = introTokens.length
+      if (text.match(/b/)) {
+        debugger
       }
+      var outroTokens = tokens.inOutroOf(text)
+      var sliceLength = text.length -outroTokens.length
+
+      var editableText = text.slice(sliceStart, sliceLength)
+
+      // console.log(introTokens.length, "intro tokens,", outroTokens.length, "outro tokens")
+
+      // if (lines.currentWords() == editableText) {
+      //   return
+      // } else {
+      //   lines.setCurrentWords(editableText)
+      // }
 
       if (editableText.length < 1) {
         return }
@@ -38,7 +45,7 @@ module.exports = library.export(
 
       var functionLiteral = !emptyLine && editableText.match(/^"?function([\s].*)$/)
 
-      var functionCall = !functionLiteral && editableText.match(/^"?(\w+)[(](.*)$/)
+      var functionCall = !functionLiteral && outroTokens[0] == "("
 
       if (!functionCall && editableText.length > 0) {
         var stringLiteral = editableText }
@@ -46,10 +53,10 @@ module.exports = library.export(
       var gotFunctionTokenAlready = tokens.isToken(editable.childNodes[0], "function")
 
       if (functionCall) {
-        var functionName = functionCall[1]
-        var remainder = functionCall[2]
+        // console.log("FUNCTION CALL")
+        var functionName = editableText
 
-        tokens.setIntro(editable, "(")
+        tokens.setIntro(editable)
         tokens.setOutro(editable, "(")
 
         var textNode = editable.childNodes[0]
@@ -57,15 +64,15 @@ module.exports = library.export(
 
         var editable = lines.down()
 
-        firstToken(outroTokens, ")")
-        tokens.setOutro.apply(
-          tokens,
-          [editable].concat(outroTokens))
+        tokens.unshiftCloser(editable, ")")
+        tokens.setOutro(editable)
+
         var text = document.createTextNode("\u200b")
         editable.prepend(text)
         setSelection(text, 0)
 
       } else if (functionLiteral) {
+        // console.log("FUNCTION LITERAL")
         var remainder = trimTrailingQuote(functionLiteral[1])
 
         tokens.setIntro(editable, "function")
@@ -85,15 +92,11 @@ module.exports = library.export(
         lines.up()
 
       } else if (stringLiteral) {
+        // console.log("STRING LITERAL")
         lines.setAttribute("kind", "string literal")
         lines.setAttribute("string", stringLiteral)
         tokens.setIntro(editable, "\"")
-
-        firstToken(outroTokens, "\"")
-
-        tokens.setOutro.apply(
-          tokens,
-          [editable].concat(outroTokens))
+        tokens.setOutro(editable, "\"")
       }
 
       // done with onEditorEvent
@@ -123,6 +126,18 @@ module.exports = library.export(
       }
     }
 
-    return editLoop
+    var debounce
+    var event
+
+    return function(lines, newEvent) {
+      event = newEvent
+      if (debounce) {
+        clearTimeout(debounce)
+        debounce = null
+      }
+      debounce = setTimeout(function() {
+        editLoop(lines, event)
+      })
+    }
   }
 )

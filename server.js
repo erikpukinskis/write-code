@@ -104,6 +104,6 @@ library.using([
 
     site.start(1413)
 
-    childProcess.exec("open http://localhost:1413/write-code/hello-world")
+    // childProcess.exec("open http://localhost:1413/write-code/hello-world")
   }
 )
