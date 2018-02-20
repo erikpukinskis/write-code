@@ -5,18 +5,59 @@ function Editor() {
   this.intros = {}
   this.outros = {}
   this.closing = {}
+  this.editables = {}
 }
 
-var QUOTE = "\""
+symbols = {
+  "quote": "\"",
+  "left-paren": "(",
+  "right-paren": "(",
+  "open-curly": "{",
+  "close-curly": "}",
+  "left-brace": "[",
+  "right-brace": "]",
+  "function": "function",
+  "var": "var",
+}
 
 Editor.prototype.text = function(lineNumber, text) {
-  var expression = lineToExpression(text)
+  var expression = {}
 
-  debugger
+  var regex = /("|function |var )?([. \w]*)((\((\w+,?)*\))|([-+<>=:]\w+)+)*([\[\]}{(),"]*)/
+
+  var parts = text.match(regex)
+
+  if (parts[7]) {
+    var outroSymbols = parts[7].split("")
+  }
+  if (outroSymbols && outroSymbols[0] == symbols["left-paren"]) {
+    expression.kind = "function call"
+    expression.functionName = parts[2]
+  } else if (parts[1] == symbols["quote"]) {
+    expression.kind = "string literal"
+    expression.string = parts[2]
+  } else {
+    expression.kind = "string literal"
+    expression.string = parts[0]
+  }
+
+  console.log("···"+text+"···")
+  if (text.match(/\(/)) {
+    debugger
+  }
+
   if (expression.kind == "string literal") {
     this.intros[lineNumber] = "quote"
     this.outros[lineNumber] = "quote"
+    this.editables[lineNumber] = expression.string
+  } else if (expression.kind == "function call") {
+    delete this.intros[lineNumber]
+    this.outros[lineNumber] = "left-paren"
   }
+}
+
+Editor.prototype.getFirstEditable = function(lineNumber) {
+  return this.editables[lineNumber]
 }
 
 function lineToExpression(text) {
@@ -29,7 +70,6 @@ Editor.prototype.pressEnter = function() {
 } 
 
 Editor.prototype.getIntroSymbols = function(lineNumber) {
-  debugger
   var symbol = this.intros[lineNumber]
   if (symbol) {
     return [symbol]

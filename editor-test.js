@@ -10,13 +10,14 @@ runTest(
     function expectSymbols(line, intro, outro) {
       var introSymbols = editor.getIntroSymbols(line)
       var outroSymbols = editor.getOutroSymbols(line)
-      var message = "expected intro symbols "+JSON.stringify(introSymbols)+" on line "+line+" but editor thinks they are "+JSON.stringify(intro)
+      var message = "expected intro symbols "+JSON.stringify(intro)+" on line "+line+" but editor thinks they are "+JSON.stringify(introSymbols)
       expect(introSymbols).to.deep.equal(intro, message)
-      var otherMessage = "expected outro symbols "+JSON.stringify(outroSymbols)+" to deep equal "+JSON.stringify(outro)
+      var otherMessage = "expected outro symbols "+JSON.stringify(outro)+" to deep equal "+JSON.stringify(outroSymbols)
       expect(outroSymbols).to.deep.equal(outro, otherMessage)
     }
 
     function expectText(line, text) {
+      expect(editor.getFirstEditable(line)).to.equal(text)
     }
 
     function expectCursor(line, column) {
