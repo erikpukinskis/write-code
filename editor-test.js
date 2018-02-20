@@ -12,7 +12,7 @@ runTest(
       var outroSymbols = editor.getOutroSymbols(line)
       var message = "expected intro symbols "+JSON.stringify(intro)+" on line "+line+" but editor thinks they are "+JSON.stringify(introSymbols)
       expect(introSymbols).to.deep.equal(intro, message)
-      var otherMessage = "expected outro symbols "+JSON.stringify(outro)+" to deep equal "+JSON.stringify(outroSymbols)
+      var otherMessage = "expected outro symbols "+JSON.stringify(outro)+" on line "+line+" but editor thinks they are "+JSON.stringify(outroSymbols)
       expect(outroSymbols).to.deep.equal(outro, otherMessage)
     }
 

@@ -4,7 +4,8 @@ function Editor() {
   this.currentLine = 0
   this.intros = {}
   this.outros = {}
-  this.closing = {}
+  this.howToClose = {}
+  this.linesClosedOn = {}
   this.editables = {}
 }
 
@@ -53,7 +54,18 @@ Editor.prototype.text = function(lineNumber, text) {
   } else if (expression.kind == "function call") {
     delete this.intros[lineNumber]
     this.outros[lineNumber] = "left-paren"
+    this.howToClose[lineNumber] = "right-paren"
+
+    ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
   }
+}
+
+function ensureContains(collection, index, value) {
+  if (!collection[index]) {
+    collection[index] = []
+  }
+
+  collection[index].unshift(value)
 }
 
 Editor.prototype.getFirstEditable = function(lineNumber) {
@@ -80,13 +92,20 @@ Editor.prototype.getIntroSymbols = function(lineNumber) {
 
 Editor.prototype.getOutroSymbols = function(lineNumber) {
   var outro = this.outros[lineNumber]
-  var closing = this.closing[lineNumber]
+  var howToClose = this.howToClose
+
+  if (this.linesClosedOn[lineNumber]) {
+    var closers = this.linesClosedOn[lineNumber].map(function(lineOpened) {
+      return howToClose[lineOpened]
+    })
+  }
+
   var symbols = []
   if (outro) {
     symbols.push(outro)
   }
-  if (closing) {
-    symbols = symbols.concat(closing)
+  if (closers) {
+    symbols = symbols.concat(closers)
   }
   return symbols
 } 
