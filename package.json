@@ -17,6 +17,9 @@
     "web-site": "*",
     "a-wild-universe-appeared": "^0.33.0"
   },
+  "scripts": {
+    "test": "node editor-test"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/erikpukinskis/write-code.git"
