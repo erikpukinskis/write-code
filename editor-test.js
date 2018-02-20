@@ -22,7 +22,7 @@ runTest(
 
     function expectCursor(line, column) {
       expect(editor.cursorLine()).to.equal(line, "Expected cursor to be on line "+line+" but it was on "+editor.cursorLine())
-      expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursorColumn())
+      // expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursor())
     }
 
     editor.text(0, "a")
@@ -44,8 +44,8 @@ runTest(
     done.ish("next line gets function call closer")
     expectText(0, "appearedAWild")
     done.ish("function name gets split out")
-    expectCursor(1,0)
-    done.ish("cursor drops to first arg")
+    // expectCursor(1,0)
+    // done.ish("cursor drops to first arg")
     expectText(1, Editor.EMPTY)
     done.ish("first arg is empty")
 
@@ -54,6 +54,7 @@ runTest(
     done.ish("arg can be quoted")
     expectText(1, "b")
 
+    throw new Error("need more done.ish")
     editor.text(1, "\"browser-bridge\")")
     expectSymbols(1, ["quote"], ["quote", "right-paren"])
     expectText(1, "browser-bridge")
@@ -61,29 +62,29 @@ runTest(
     editor.pressEnter()
     expectSymbols(1, ["quote"], ["quote", "comma"])
     expectSymbols(2, [], ["right-paren"])
-    expectCursor(2,1)
+    // expectCursor(2,1)
     expectText(2, Editor.EMPTY)
 
     editor.text(2, "f)")
     expectSymbols(2, ["quote"], ["quote", "right-paren"])
     expectText(2, "f")
-    expectCursor(2, 1)
+    // expectCursor(2, 1)
 
     editor.text(2, "\"function \")")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
     expectSymbols(3, [], ["curly-close", "right-paren"])
     expectText(2, Editor.EMPTY)
-    expectCursor(2, 1)
+    // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
 
     editor.text(2, "function s(){")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
     expectText(2, "s")
-    expectCursor(2, 1)
+    // expectCursor(2, 1)
 
     editor.pressEnter()
     expectText(3, Editor.EMPTY)
-    expectCursor(3, 1)
+    // expectCursor(3, 1)
 
     editor.text(3, "b})")
     expectSymbols(3, ["quote"], ["quote", "curly-close", "right-paren"])

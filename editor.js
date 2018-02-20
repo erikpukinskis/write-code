@@ -1,8 +1,6 @@
 module.exports = Editor
 
 function Editor() {
-  this.currentLine = 0
-  this.currentColumn = 0
   this.intros = {}
   this.outros = {}
   this.howToClose = {}
@@ -10,7 +8,7 @@ function Editor() {
   this.editables = {}
 }
 
-symbols = {
+var symbols = {
   "quote": "\"",
   "left-paren": "(",
   "right-paren": "(",
@@ -20,6 +18,10 @@ symbols = {
   "right-brace": "]",
   "function": "function",
   "var": "var",
+}
+
+function symbolNameToText(name) {
+  return symbols[name]
 }
 
 Editor.prototype.text = function(lineNumber, text) {
@@ -57,16 +59,20 @@ Editor.prototype.text = function(lineNumber, text) {
     this.outros[lineNumber] = "left-paren"
     this.howToClose[lineNumber] = "right-paren"
     this.editables[lineNumber] = expression.functionName
+    ensureSomething(this.editables, lineNumber+1)
     ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
+  }
+
+}
+
+function ensureSomething(editables, lineNumber) {
+  if (!editables[lineNumber]) {
+    editables[lineNumber] = Editor.EMPTY
   }
 }
 
-Editor.prototype.cursorLine = function() {
-  return this.currentLine
-}
-
-Editor.prototype.cursorColumn = function() {
-  return this.currentColumn
+Editor.prototype.getLineSource = function(lineNumber) {
+  return this.getIntroSymbols(lineNumber).map(symbolNameToText) + this.editables[lineNumber] + this.getOutroSymbols(lineNumber).map(symbolNameToText)
 }
 
 Editor.EMPTY = "\u200b"
