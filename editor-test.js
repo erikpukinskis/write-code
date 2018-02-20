@@ -21,6 +21,8 @@ runTest(
     }
 
     function expectCursor(line, column) {
+      expect(editor.cursorLine()).to.equal(line, "Expected cursor to be on line "+line+" but it was on "+editor.cursorLine())
+      expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursorColumn())
     }
 
     editor.text(0, "a")
@@ -48,8 +50,8 @@ runTest(
     done.ish("first arg is empty")
 
     editor.text(1, "b)")
-    throw new Exception("need more done.ish!")
     expectSymbols(1, ["quote"], ["quote", "right-paren"])
+    done.ish("arg can be quoted")
     expectText(1, "b")
 
     editor.text(1, "\"browser-bridge\")")

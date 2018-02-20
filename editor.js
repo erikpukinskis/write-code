@@ -2,6 +2,7 @@ module.exports = Editor
 
 function Editor() {
   this.currentLine = 0
+  this.currentColumn = 0
   this.intros = {}
   this.outros = {}
   this.howToClose = {}
@@ -55,10 +56,20 @@ Editor.prototype.text = function(lineNumber, text) {
     delete this.intros[lineNumber]
     this.outros[lineNumber] = "left-paren"
     this.howToClose[lineNumber] = "right-paren"
-
+    this.editables[lineNumber] = expression.functionName
     ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
   }
 }
+
+Editor.prototype.cursorLine = function() {
+  return this.currentLine
+}
+
+Editor.prototype.cursorColumn = function() {
+  return this.currentColumn
+}
+
+Editor.EMPTY = "\u200b"
 
 function ensureContains(collection, index, value) {
   if (!collection[index]) {
