@@ -30,14 +30,17 @@ module.exports = library.export(
     }
 
     Editor.prototype.parse = function(text) {
-      var introOutro = text.match(/^("|function |var )?(.*?)([\[\]}{(),"]*)$/)
-      var intro = introOutro[1] || ""
-      var middle = introOutro[2] || ""
-      var outro = introOutro[3] || ""
+      var introOutro = text.match(/^("?function |"?var |")?(.*?)([\[\]}{(),"]*)$/)
+      var intro = introOutro[1]
+      var middle = introOutro[2]
+      var outro = introOutro[3]
+      if (text.match(/function/)) {
+      debugger
+    }
 
       var regex = /^([.\w]*)((\((\w+,?)*\))|([+<>=:]\w+)+|(.+))*$/
 
-      var parts = middle.match(regex)
+      var parts = (middle||"").match(regex)
 
       var identifierIsh = parts[1]
       var notIdentifier = parts[2]
@@ -48,9 +51,8 @@ module.exports = library.export(
       var segments = {
         text: text,
         intro: intro,
-        middle: middle,
         outro: outro,
-        "---": "---",
+        middle: middle,
         identifierIsh: identifierIsh,
         notIdentifier: notIdentifier,
         argumentSignature: argumentSignature,

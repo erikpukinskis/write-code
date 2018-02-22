@@ -17,6 +17,7 @@ runTest(
     segments = editor.parse("\"browser-bridge\")")
     segments = editor.parse("f)")
     segments = editor.parse("\"function \")")
+    expect(segments.intro).to.equal("\"function ")
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
     segments = editor.parse("\"b(\"})")
