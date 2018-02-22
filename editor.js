@@ -24,26 +24,22 @@ module.exports = library.export(
 
     Editor.prototype.pressEnter = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
-      var nextLineId = this.lines.get(lineNumber + 1)
-
-      // todo: probably should splice if there's any editable there too
-      if (this.intros[nextLineId]) {
-        throw new Error("there's stuff on the next line we need to splice")
-      } else {
-        // just move down a line
-        var kind = this.kindOfParent(lineNumber)
-        nextLineId = generateId()
-        this.lines.splice(lineNumber + 1, 0, nextLineId)
-        this.ensureSomethingAt(lineNumber + 1)
-        var linesClosed = this.linesClosedOn[lineId] 
-        this.linesClosedOn[nextLineId] = linesClosed
-        delete this.linesClosedOn[lineId]
-        if (kind == "function call") {
-          this.commas[lineId] = true
-        }
+      var kind = this.kindOfParent(lineNumber)
+      this.addLineAfter(lineNumber)
+      if (kind == "function call") {
+        this.commas[lineId] = true
       }
+    }
 
-    } 
+    Editor.prototype.addLineAfter = function(lineNumber) {
+      var nextLineId = generateId()
+      this.lines.splice(lineNumber + 1, 0, nextLineId)
+      this.ensureSomethingAt(lineNumber + 1)
+      var lineId = this.lines.get(lineNumber)
+      var linesClosed = this.linesClosedOn[lineId] 
+      this.linesClosedOn[nextLineId] = linesClosed
+      delete this.linesClosedOn[lineId]
+    }
 
     Editor.prototype.kindOfParent = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
@@ -117,9 +113,9 @@ module.exports = library.export(
 
       var outro = segments.outro && segments.outro.split("") || []
 
-      var intro = segments.intro && segments.intro.split("") || []
+      var intro = introFromSegments(segments)
 
-      var isFunctionLiteral = intro && contains(intro, "function ")
+      var isFunctionLiteral = intro == "function"
 
       var isFunctionCall = !isFunctionLiteral && outro && outro[0] == "("
 
@@ -141,6 +137,22 @@ module.exports = library.export(
       return expression
     }
 
+    function introFromSegments(segments) {
+      var intro = segments.intro
+
+      if (!intro) {
+        return
+      }
+
+      if (intro.match(/function/)) {
+        return "function"
+      } else if (intro.match(/var/)) {
+        return "var"
+      } else if (intro.match(/"/)) {
+        return "quote"
+      }
+    }
+
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
 
@@ -150,9 +162,13 @@ module.exports = library.export(
 
       if (expression.kind == "function literal") {
 
+        var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
+        delete this.linesClosedOn[lineId]
         this.intros[lineId] = "function"
+        this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
         this.editables[lineId] = expression.functionName
-        var nextLineId = this.ensureSomethingAt(lineNumber + 1)
+
+        var nextLineId = this.addLineAfter(lineNumber)
 
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
@@ -237,7 +253,9 @@ module.exports = library.export(
       }
 
       var symbols = []
-      if (outro) {
+      if (outro && Array.isArray(outro)) {
+        symbols = symbols.concat(outro)
+      } else if (outro) {
         symbols.push(outro)
       }
       if (comma) {
