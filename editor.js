@@ -56,62 +56,65 @@ module.exports = library.export(
         moarExpression: moarExpression,
       }
 
-      console.log(JSON.stringify(segments, null, 2))
-
       return segments
     }
 
-    Editor.prototype.text = function(lineNumber, text) {
+    Editor.prototype.detectExpression = function(text) {
       var expression = {}
 
-      var segments = parse(text)
+      var segments = this.parse(text)
 
-      if (parts[3]) {
-        var outro = parts[3].match(/[\[\]}{(),"]+$/)
-        if (outro) {
-          var freeText = parts[3].slice(0, parts[3].length - outro.length)
-        } else {
-          var freeText = parts[3]
-        }
-      } else {
-        var outro = false
-      }
+      console.log(JSON.stringify(segments, null, 2))
 
-      // console.  log("···"+text+"···")
-      // console.log(JSON.stringify(parts, null, 2))
+      var outro = segments.outro && segments.outro.split("") || []
+      var intro = segments.intro && segments.intro.split("") || []
 
-      if (text.match("browser-bridge")) {
-        debugger
-      }
-      var outroSymbols = null
 
-      var isFunctionCall = outroSymbols && outroSymbols[0] == symbols["left-paren"]
+      var isFunctionLiteral = intro && contains(intro, "function ")
 
-      var isStringLiteral = !isFunctionCall && parts[1] == symbols["quote"]
+      var isFunctionCall = !isFunctionLiteral && outro && outro[0] == "("
 
-      if (isFunctionCall) {
+      var isStringLiteral = !isFunctionCall
+
+      if (isFunctionLiteral) {
+        expression.kind = "function literal"
+        expression.functionName = segments.identifierIsh
+      } else if (isFunctionCall) {
         expression.kind = "function call"
-        expression.functionName = parts[2]
-      } else {
+        expression.functionName = segments.identifierIsh
+      } else if (isStringLiteral) {
         expression.kind = "string literal"
-        expression.string = (parts[2]||"") + (parts[3]||"")
+        expression.string = segments.middle
       }
 
-      // if (text.match(/browser-bridge/)) {
-      //   debugger
-      // }
+      return expression
+    }
 
-      if (expression.kind == "string literal") {
-        this.intros[lineNumber] = "quote"
-        this.outros[lineNumber] = "quote"
-        this.editables[lineNumber] = expression.string
+    Editor.prototype.text = function(lineNumber, text) {
+      var expression = this.detectExpression(text)
+
+      if (expression.kind == "function literal") {
+
+        this.intros[lineNumber] = "function"
+        this.editables[lineNumber] = expression.functionName
+        ensureSomething(this.editables, lineNumber+1)
+        ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
+
       } else if (expression.kind == "function call") {
+
         delete this.intros[lineNumber]
         this.outros[lineNumber] = "left-paren"
         this.howToClose[lineNumber] = "right-paren"
         this.editables[lineNumber] = expression.functionName
         ensureSomething(this.editables, lineNumber+1)
         ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
+
+      } else if (expression.kind == "string literal") {
+
+        this.intros[lineNumber] = "quote"
+        this.outros[lineNumber] = "quote"
+        this.editables[lineNumber] = expression.string
+
       }
 
     }
@@ -176,6 +179,20 @@ module.exports = library.export(
         symbols = symbols.concat(closers)
       }
       return symbols
+    }
+
+    function contains(array, value) {
+      if (!Array.isArray(array)) {
+        throw new Error("looking for "+JSON.stringify(value)+" in "+JSON.stringify(array)+", which is supposed to be an array. But it's not.")
+      }
+      var index = -1;
+      var length = array.length;
+      while (++index < length) {
+        if (array[index] == value) {
+          return true
+        }
+      }
+      return false
     }
 
     return Editor

@@ -1,7 +1,5 @@
 var runTest = require("run-test")(require)
 
-runTest.only(
-  "parsing")
 runTest(
   "parsing",
   ["./editor"],
