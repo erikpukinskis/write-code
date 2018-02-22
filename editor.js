@@ -126,21 +126,14 @@ module.exports = library.export(
 
       console.log(JSON.stringify(expression, null, 2))
 
-      this.ensureSomethingAt(lineNumber)
-
-      var lineId = this.lines.get(lineNumber)
-
-      if (!lineId) {
-        this.ensureSomethingAt(lineNumber)
-      }
-
-      var nextLineId = this.lines.get(lineNumber + 1)
+      var lineId = this.ensureSomethingAt(lineNumber)
 
       if (expression.kind == "function literal") {
 
         this.intros[lineId] = "function"
         this.editables[lineId] = expression.functionName
-        this.ensureSomethingAt(lineNumber)
+        var nextLineId = this.ensureSomethingAt(lineNumber + 1)
+
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "function call") {
@@ -149,7 +142,7 @@ module.exports = library.export(
         this.outros[lineId] = "left-paren"
         this.howToClose[lineId] = "right-paren"
         this.editables[lineId] = expression.functionName
-        this.ensureSomethingAt(lineNumber)
+        var nextLineId = this.ensureSomethingAt(lineNumber + 1)
 
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
@@ -172,6 +165,7 @@ module.exports = library.export(
       if (!this.editables[lineId]) {
         this.editables[lineId] = Editor.EMPTY
       }
+      return lineId
     }
 
     Editor.prototype.getLineSource = function(lineNumber) {
