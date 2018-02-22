@@ -33,6 +33,10 @@ runTest(
   function(expect, done, Editor) {
 
     var editor = new Editor()
+    editor.text = function(line, text) {
+      Editor.prototype.text.call(editor, line, text)
+      Editor.prototype.text.call(editor, line, text)
+    }
 
     function expectSymbols(line, intro, outro) {
       var introSymbols = editor.getIntroSymbols(line)
@@ -124,7 +128,6 @@ runTest(
     done.ish("functions have names")
     // expectCursor(2, 1)
 
-    debugger
     editor.pressEnter(2)
     expectText(3, Editor.EMPTY)
     expectText(4, undefined)

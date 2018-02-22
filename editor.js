@@ -194,10 +194,15 @@ module.exports = library.export(
 
       } else if (expression.kind == "function call") {
 
+        this.editables[lineId] = expression.functionName
+
+        if (this.outros[lineId] == "left-paren") {
+          return
+        }
+
         delete this.intros[lineId]
         this.outros[lineId] = "left-paren"
         this.howToClose[lineId] = "right-paren"
-        this.editables[lineId] = expression.functionName
 
         if (linesPreviouslyClosedHere) {
           var nextLineId = this.addLineAfter(lineNumber)
