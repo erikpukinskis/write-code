@@ -33,7 +33,7 @@ module.exports = library.export(
         // just move down a line
         var kind = this.kindOfParent(lineNumber)
         nextLineId = generateId()
-        this.lines.splice(nextLineId + 1, 0, newId) 
+        this.lines.splice(lineNumber + 1, 0, nextLineId) 
         var linesClosed = this.linesClosedOn[lineId] 
         this.linesClosedOn[nextLineId] = linesClosed
         delete this.linesClosedOn[lineId]
@@ -43,6 +43,25 @@ module.exports = library.export(
       }
 
     } 
+
+    Editor.prototype.kindOfParent = function(lineNumber) {
+      var lineId = this.lines.get(lineNumber)
+      var closers = this.linesClosedOn[lineId]
+      if (!closers) {
+        throw new Error("no parents")
+      }
+      var lineNumbers = closers.map(this.lines.find.bind(this.lines))
+      var latest = Math.max.apply(null, lineNumbers)
+      var index = lineNumbers.indexOf(latest)
+      var parentId = closers[index]
+
+      var outro = this.outros[parentId]
+      if (outro == "left-paren") {
+        return "function call"
+      } else {
+        throw new Error("not sure")
+      }
+    }
 
     var symbols = {
       "quote": "\"",
