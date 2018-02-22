@@ -2,16 +2,47 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "editor",
-  [],
-  function(regex) {
+  ["forkable-list"],
+  function(forkableList) {
 
     function Editor() {
       this.intros = {}
       this.outros = {}
+      this.commas = {}
       this.howToClose = {}
       this.linesClosedOn = {}
       this.editables = {}
+      this.lines = forkableList([])
     }
+
+    var lastInteger = 1000*50
+    function generateId() {
+      lastInteger++
+      var id = lastInteger.toString(36)
+      return "ln-"+id
+    }
+
+    Editor.prototype.pressEnter = function(lineNumber) {
+      var lineId = this.lines.get(lineNumber)
+      var nextLineId = this.lines.get(lineNumber + 1)
+
+      // todo: probably should splice if there's any editable there too
+      if (this.intros[nextLineId]) {
+        throw new Error("there's stuff on the next line we need to splice")
+      } else {
+        // just move down a line
+        var kind = this.kindOfParent(lineNumber)
+        nextLineId = generateId()
+        this.lines.splice(nextLineId + 1, 0, newId) 
+        var linesClosed = this.linesClosedOn[lineId] 
+        this.linesClosedOn[nextLineId] = linesClosed
+        delete this.linesClosedOn[lineId]
+        if (kind == "function call") {
+          this.commas[lineId] = true
+        }
+      }
+
+    } 
 
     var symbols = {
       "quote": "\"",
@@ -64,17 +95,17 @@ module.exports = library.export(
 
       var segments = this.parse(text)
 
-      console.log(JSON.stringify(segments, null, 2))
-
       var outro = segments.outro && segments.outro.split("") || []
-      var intro = segments.intro && segments.intro.split("") || []
 
+      var intro = segments.intro && segments.intro.split("") || []
 
       var isFunctionLiteral = intro && contains(intro, "function ")
 
       var isFunctionCall = !isFunctionLiteral && outro && outro[0] == "("
 
       var isStringLiteral = !isFunctionCall
+
+      console.log(JSON.stringify(segments, null, 2))
 
       if (isFunctionLiteral) {
         expression.kind = "function literal"
@@ -93,40 +124,59 @@ module.exports = library.export(
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
 
+      console.log(JSON.stringify(expression, null, 2))
+
+      this.ensureSomethingAt(lineNumber)
+
+      var lineId = this.lines.get(lineNumber)
+
+      if (!lineId) {
+        this.ensureSomethingAt(lineNumber)
+      }
+
+      var nextLineId = this.lines.get(lineNumber + 1)
+
       if (expression.kind == "function literal") {
 
-        this.intros[lineNumber] = "function"
-        this.editables[lineNumber] = expression.functionName
-        ensureSomething(this.editables, lineNumber+1)
-        ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
+        this.intros[lineId] = "function"
+        this.editables[lineId] = expression.functionName
+        this.ensureSomethingAt(lineNumber)
+        ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "function call") {
 
-        delete this.intros[lineNumber]
-        this.outros[lineNumber] = "left-paren"
-        this.howToClose[lineNumber] = "right-paren"
-        this.editables[lineNumber] = expression.functionName
-        ensureSomething(this.editables, lineNumber+1)
-        ensureContains(this.linesClosedOn, lineNumber+1, lineNumber)
+        delete this.intros[lineId]
+        this.outros[lineId] = "left-paren"
+        this.howToClose[lineId] = "right-paren"
+        this.editables[lineId] = expression.functionName
+        this.ensureSomethingAt(lineNumber)
+
+        ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "string literal") {
 
-        this.intros[lineNumber] = "quote"
-        this.outros[lineNumber] = "quote"
-        this.editables[lineNumber] = expression.string
+        this.intros[lineId] = "quote"
+        this.outros[lineId] = "quote"
+        this.editables[lineId] = expression.string
 
       }
 
     }
 
-    function ensureSomething(editables, lineNumber) {
-      if (!editables[lineNumber]) {
-        editables[lineNumber] = Editor.EMPTY
+    Editor.prototype.ensureSomethingAt = function(lineNumber) {
+      var lineId = this.lines.get(lineNumber)
+      if (!lineId) {
+        lineId = generateId()
+        this.lines.set(lineNumber, lineId)
+      }
+      if (!this.editables[lineId]) {
+        this.editables[lineId] = Editor.EMPTY
       }
     }
 
     Editor.prototype.getLineSource = function(lineNumber) {
-      return this.getIntroSymbols(lineNumber).map(symbolNameToText) + this.editables[lineNumber] + this.getOutroSymbols(lineNumber).map(symbolNameToText)
+      var lineId = this.lines.get(lineNumber)
+      return this.getIntroSymbols(lineNumber).map(symbolNameToText) + this.editables[lineId] + this.getOutroSymbols(lineNumber).map(symbolNameToText)
     }
 
     Editor.EMPTY = "\u200b"
@@ -140,7 +190,8 @@ module.exports = library.export(
     }
 
     Editor.prototype.getFirstEditable = function(lineNumber) {
-      return this.editables[lineNumber]
+      var lineId = this.lines.get(lineNumber)
+      return this.editables[lineId]
     }
 
     function lineToExpression(text) {
@@ -149,11 +200,9 @@ module.exports = library.export(
       }
     }
 
-    Editor.prototype.pressEnter = function() {
-    } 
-
     Editor.prototype.getIntroSymbols = function(lineNumber) {
-      var symbol = this.intros[lineNumber]
+      var lineId = this.lines.get(lineNumber)
+      var symbol = this.intros[lineId]
       if (symbol) {
         return [symbol]
       } else {
@@ -162,11 +211,13 @@ module.exports = library.export(
     } 
 
     Editor.prototype.getOutroSymbols = function(lineNumber) {
-      var outro = this.outros[lineNumber]
+      var lineId = this.lines.get(lineNumber)
+      var outro = this.outros[lineId]
+      var comma = this.commas[lineId]
       var howToClose = this.howToClose
 
-      if (this.linesClosedOn[lineNumber]) {
-        var closers = this.linesClosedOn[lineNumber].map(function(lineOpened) {
+      if (this.linesClosedOn[lineId]) {
+        var closers = this.linesClosedOn[lineId].map(function(lineOpened) {
           return howToClose[lineOpened]
         })
       }
@@ -174,6 +225,9 @@ module.exports = library.export(
       var symbols = []
       if (outro) {
         symbols.push(outro)
+      }
+      if (comma) {
+        symbols.push("comma")
       }
       if (closers) {
         symbols = symbols.concat(closers)

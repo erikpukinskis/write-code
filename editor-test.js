@@ -71,8 +71,8 @@ runTest(
 
     editor.text(0, "\"appearedAWild(\"")
     expectSymbols(0, [], ["left-paren"])
-    done.ish("function calls recognized")
     expectSymbols(1, [], ["right-paren"])
+    done.ish("function calls recognized")
     done.ish("next line gets function call closer")
     expectText(0, "appearedAWild")
     done.ish("function name gets split out")
@@ -91,8 +91,9 @@ runTest(
     expectText(1, "browser-bridge")
     done.ish("string args stay quoted")
 
-    editor.pressEnter()
+    editor.pressEnter(1)
     expectSymbols(1, ["quote"], ["quote", "comma"])
+
     done.ish("arg separator")
     expectSymbols(2, [], ["right-paren"])
     done.ish("closing symbols go to last arg")
@@ -124,7 +125,7 @@ runTest(
     expectText(2, "s")
     // expectCursor(2, 1)
 
-    editor.pressEnter()
+    editor.pressEnter(2)
     expectText(3, Editor.EMPTY)
     // expectCursor(3, 1)
 
