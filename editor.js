@@ -24,14 +24,23 @@ module.exports = library.export(
 
     Editor.prototype.pressEnter = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
-      var kind = this.kindOfParent(lineNumber)
+      var role = this.role(lineNumber)
+
       this.addLineAfter(lineNumber)
-      if (kind == "function call") {
+
+      if (role == "function call argument") {
         this.commas[lineId] = true
       }
     }
 
     Editor.prototype.addLineAfter = function(lineNumber) {
+      var nextLineId = this.lines.get(lineNumber + 1)
+      var nextLineIsEmpty = this.editables[nextLineId] == Editor.EMPTY
+
+      if (nextLineIsEmpty) {
+        return        
+      }
+
       var nextLineId = generateId()
       this.lines.splice(lineNumber + 1, 0, nextLineId)
       this.ensureSomethingAt(lineNumber + 1)
@@ -39,13 +48,20 @@ module.exports = library.export(
       var linesClosed = this.linesClosedOn[lineId] 
       this.linesClosedOn[nextLineId] = linesClosed
       delete this.linesClosedOn[lineId]
+      return nextLineId
     }
 
-    Editor.prototype.kindOfParent = function(lineNumber) {
+    Editor.prototype.role = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
       var closers = this.linesClosedOn[lineId]
+
+      if (this.commas[lineId]) {
+        throw new Error("probably an arg?")
+        return "function call arg"
+      }
+
       if (!closers) {
-        throw new Error("no parents")
+        return "opener"
       }
       var lineNumbers = closers.map(this.lines.find.bind(this.lines))
       var latest = Math.max.apply(null, lineNumbers)
@@ -54,7 +70,7 @@ module.exports = library.export(
 
       var outro = this.outros[parentId]
       if (outro == "left-paren") {
-        return "function call"
+        return "function call argument"
       } else {
         throw new Error("not sure")
       }

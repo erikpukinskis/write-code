@@ -117,30 +117,37 @@ runTest(
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
     done.ish("first line is empty")
-
-    throw new Error("need more done.ish")
     
     editor.text(2, "function s(){")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
     expectText(2, "s")
+    done.ish("functions have names")
     // expectCursor(2, 1)
 
+    debugger
     editor.pressEnter(2)
     expectText(3, Editor.EMPTY)
+    expectText(4, undefined)
+    done.ish("don't add extra lines if there's already an empty one")
     // expectCursor(3, 1)
 
     editor.text(3, "b})")
     expectSymbols(3, ["quote"], ["quote", "curly-close", "right-paren"])
+    done.ish("string lines inside function literals get symbols")
     expectText(3, "b")
 
     editor.text(3, "\"b(\"})")
     expectSymbols(3, [], ["left-paren"])
     expectText(3, "b")
+    done.ish("function call inside a function literal")
     expectText(4, Editor.EMPTY)
+    done.ish("call inside function gets empty arg")
     expectSymbols(4, [], ["right-paren", "curly-close", "right-paren"])
+    done.ish("call inside literal inside call closes properly")
 
     editor.text(4, "hi)})")
     expectSymbols(4, ["quote"], ["quote", "right-paren", "curly-close", "right-paren"])
+    done.ish("quote string four levels deep")
 
     done()
   }
