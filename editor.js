@@ -166,7 +166,7 @@ module.exports = library.export(
 
         this.intros[lineId] = "function"
         this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
-        this.editables[lineId] = expression.functionName
+        this.editables[lineId] = expression.functionName || Editor.EMPTY
 
         var nextLineId = this.addLineAfter(lineNumber)
 
