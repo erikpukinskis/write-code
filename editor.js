@@ -163,13 +163,17 @@ module.exports = library.export(
       if (expression.kind == "function literal") {
 
         var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
-        delete this.linesClosedOn[lineId]
+
         this.intros[lineId] = "function"
         this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
         this.editables[lineId] = expression.functionName
 
         var nextLineId = this.addLineAfter(lineNumber)
 
+        delete this.linesClosedOn[lineId]
+        this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
+
+        this.howToClose[lineId] = "curly-close"
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "function call") {
