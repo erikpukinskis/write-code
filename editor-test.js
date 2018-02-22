@@ -22,6 +22,8 @@ runTest(
     segments = editor.parse("b})")
     segments = editor.parse("\"b(\"})")
     segments = editor.parse("hi)})")
+    segments = editor.parse("do.dee.dum(")
+    expect(segments.identifierIsh).to.equal("do.dee.dum")
 
     done()
   }

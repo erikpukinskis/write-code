@@ -34,9 +34,6 @@ module.exports = library.export(
       var intro = introOutro[1]
       var middle = introOutro[2]
       var outro = introOutro[3]
-      if (text.match(/function/)) {
-      debugger
-    }
 
       var regex = /^([.\w]*)((\((\w+,?)*\))|([+<>=:]\w+)+|(.+))*$/
 
