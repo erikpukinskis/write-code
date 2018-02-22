@@ -176,9 +176,9 @@ module.exports = library.export(
 
       var lineId = this.ensureSomethingAt(lineNumber)
 
-      if (expression.kind == "function literal") {
+      var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
 
-        var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
+      if (expression.kind == "function literal") {
 
         this.intros[lineId] = "function"
         this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
@@ -198,7 +198,15 @@ module.exports = library.export(
         this.outros[lineId] = "left-paren"
         this.howToClose[lineId] = "right-paren"
         this.editables[lineId] = expression.functionName
-        var nextLineId = this.ensureSomethingAt(lineNumber + 1)
+
+        if (linesPreviouslyClosedHere) {
+          var nextLineId = this.addLineAfter(lineNumber)
+          delete this.linesClosedOn[lineId]
+          this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
+
+        } else {
+          var nextLineId = this.ensureSomethingAt(lineNumber + 1)
+        }
 
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
