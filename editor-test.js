@@ -1,5 +1,31 @@
 var runTest = require("run-test")(require)
 
+runTest.only(
+  "parsing")
+runTest(
+  "parsing",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+
+    var segments = editor.parse("\"browser-bridge\"")
+    expect(segments.outro).to.equal("\"")
+    segments = editor.parse("a")
+    segments = editor.parse("\"ap\"")
+    segments = editor.parse("\"appearedAWild(\"")
+    segments = editor.parse("b)")
+    segments = editor.parse("\"browser-bridge\")")
+    segments = editor.parse("f)")
+    segments = editor.parse("\"function \")")
+    segments = editor.parse("function s(){")
+    segments = editor.parse("b})")
+    segments = editor.parse("\"b(\"})")
+    segments = editor.parse("hi)})")
+
+    done()
+  }
+)
+
 runTest(
   "works",
   ["./editor"],
@@ -24,6 +50,11 @@ runTest(
       expect(editor.cursorLine()).to.equal(line, "Expected cursor to be on line "+line+" but it was on "+editor.cursorLine())
       // expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursor())
     }
+
+    editor.text(0, "\"browser-bridge\"")
+    expectSymbols(0, ["quote"], ["quote"])
+    expectText(0, "browser-bridge")
+    done.ish("strings can be unlike symbols")
 
     editor.text(0, "a")
     expectSymbols(0, ["quote"], ["quote"])
@@ -54,29 +85,39 @@ runTest(
     done.ish("arg can be quoted")
     expectText(1, "b")
 
-    throw new Error("need more done.ish")
     editor.text(1, "\"browser-bridge\")")
     expectSymbols(1, ["quote"], ["quote", "right-paren"])
     expectText(1, "browser-bridge")
+    done.ish("string args stay quoted")
 
     editor.pressEnter()
     expectSymbols(1, ["quote"], ["quote", "comma"])
+    done.ish("arg separator")
     expectSymbols(2, [], ["right-paren"])
+    done.ish("closing symbols go to last arg")
     // expectCursor(2,1)
     expectText(2, Editor.EMPTY)
+    done.ish("new args are empty")
 
     editor.text(2, "f)")
     expectSymbols(2, ["quote"], ["quote", "right-paren"])
     expectText(2, "f")
+    done.ish("additonal args get quoted")
     // expectCursor(2, 1)
 
     editor.text(2, "\"function \")")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
+    done.ish("function literals get recognized")
     expectSymbols(3, [], ["curly-close", "right-paren"])
+    done.ish("function literals get closed")
     expectText(2, Editor.EMPTY)
+    done.ish("function literal name is empty")
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
+    done.ish("first line is empty")
 
+    throw new Error("need more done.ish")
+    
     editor.text(2, "function s(){")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
     expectText(2, "s")
