@@ -33,7 +33,8 @@ module.exports = library.export(
         // just move down a line
         var kind = this.kindOfParent(lineNumber)
         nextLineId = generateId()
-        this.lines.splice(lineNumber + 1, 0, nextLineId) 
+        this.lines.splice(lineNumber + 1, 0, nextLineId)
+        this.ensureSomethingAt(lineNumber + 1)
         var linesClosed = this.linesClosedOn[lineId] 
         this.linesClosedOn[nextLineId] = linesClosed
         delete this.linesClosedOn[lineId]
