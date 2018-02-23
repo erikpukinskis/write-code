@@ -11,11 +11,16 @@ module.exports = library.export(
 
 
       if (event.key == "Enter") {
+
         editor.pressEnter(currentLine)
+
+        syncLine(currentLine, editor)
 
         currentLine++
 
         var lineId = editor.lines.get(currentLine)
+
+        syncLine(currentLine, editor)
 
         setSelection(lineId, 0)
         return

@@ -89,6 +89,7 @@ module.exports = library.export(
 
     var symbolText = {
       "quote": "\"",
+      "comma": ",",
       "left-paren": "(",
       "right-paren": ")", 
       "arguments-open": "(",
