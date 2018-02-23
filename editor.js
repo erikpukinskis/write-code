@@ -113,6 +113,10 @@ module.exports = library.export(
       var middle = outroMatch[2]
       var outro = outroMatch[3]
 
+      if (middle.match(/[^\u200b]/)) {
+        middle = middle.replace(Editor.EMPTY, "")
+      }
+
       var regex = /^([.\w]*)((\((\w+,?)*\))|([+<>=:]\w+)+|(.+))*$/
 
       var parts = (middle||"").match(regex)
@@ -142,7 +146,6 @@ module.exports = library.export(
       var emptyMatch = text.match(/^[\s\u200b]*"?[\s\u200b]*$/)
 
       if (emptyMatch) {
-        console.log(text, "is empty")
         return
       }
 
@@ -159,8 +162,6 @@ module.exports = library.export(
       var isFunctionCall = !isFunctionLiteral && segments.outro && !!segments.outro.match(/^\([^{]*$/)
 
       var isStringLiteral = !isFunctionCall
-
-      // console.log("segments", JSON.stringify(segments, null, 2))
 
       if (isFunctionLiteral) {
         expression.kind = "function literal"
@@ -194,8 +195,6 @@ module.exports = library.export(
 
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
-
-      // console.log(JSON.stringify(expression, null, 2))
 
       var lineId = this.ensureSomethingAt(lineNumber)
 
@@ -248,15 +247,7 @@ module.exports = library.export(
         this.intros[lineId] = "quote"
         this.outros[lineId] = "quote"
         this.editables[lineId] = expression.string
-
       }
-
-      // console.log("line", JSON.stringify({
-      //   intro: this.intros[lineId],
-      //   outro: this.outros[lineId],
-      //   editable: this.editables[lineId],
-      // }, null, 2))
-
     }
 
     Editor.prototype.ensureSomethingAt = function(lineNumber) {

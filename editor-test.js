@@ -88,6 +88,11 @@ runTest(
     expectText(0, Editor.EMPTY)
     done.ish("empty string with nonprinting space is string")
 
+    editor.text(0, "a"+Editor.EMPTY)
+    expectSymbols(0, ["quote"], ["quote"])
+    expectText(0, "a")
+    done.ish("strip nonprinting character from strings with printing characters")
+
     editor.text(0, "\"browser-bridge\"")
     expectSymbols(0, ["quote"], ["quote"])
     done.ish("quotes get recognized")

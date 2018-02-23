@@ -20,10 +20,6 @@ module.exports = library.export(
         event.target.innerHTML = ""
       }
 
-      if (source.match(/function /)) {
-        debugger
-      }
-
       if (source == "\"\"") {
         editor.text(currentLine, "")
       } else {
@@ -57,15 +53,7 @@ module.exports = library.export(
 
     function syncLine(lineNumber, editor) {
 
-      // if (lines.currentWords() == editableText) {
-      //   return
-      // } else {
-      //   lines.setCurrentWords(editableText)
-      // }
-
       var lineId = editor.lines.get(lineNumber)
-
-      // console.log("syncing "+lineId+" at "+lineNumber)
 
       var editable = document.querySelector(".line-"+lineId)
 
@@ -79,7 +67,7 @@ module.exports = library.export(
 
       var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
       var outro = editor.getOutroSymbols(lineNumber)
-      // console.log("outro", outro)
+
       var outroTokens = outro.map(Editor.symbolText)
 
       tokens.setIntro(editable, introTokens)
