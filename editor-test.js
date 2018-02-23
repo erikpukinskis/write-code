@@ -68,6 +68,11 @@ runTest(
       // expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursor())
     }
 
+    // editor.text(0, "\"hi (\"")
+    // expectSymbols(0, ["quote"], ["quote"])
+    // expectText(0, "hi (")
+    // done.ish("can use parentheticals in quotes")
+
     editor.text(0, "")
     expectSymbols(0, [], [])
     expectText(0, Editor.EMPTY)

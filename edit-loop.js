@@ -11,7 +11,6 @@ module.exports = library.export(
 
 
       if (event.key == "Enter") {
-        debugger
         editor.pressEnter(currentLine)
 
         currentLine++
@@ -51,6 +50,20 @@ module.exports = library.export(
       if (nextLineId) {
         syncLine(currentLine + 1, editor)
       }
+
+      var outro = editor.outros[lineId]
+      var onFunctionCall = outro == "left-paren"
+
+      if (event.key == "(") {
+        editor.pressEnter(currentLine)
+
+        currentLine++
+
+        var lineId = editor.lines.get(currentLine)
+
+        setSelection(lineId, 0)
+      }
+
     }
 
     function syncLine(lineNumber, editor) {
@@ -67,9 +80,6 @@ module.exports = library.export(
 
       var words = editor.editables[lineId]
 
-      if (editor.getIntroSymbols(lineNumber)[0] == "function") {
-        debugger
-      }
       var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
       var outro = editor.getOutroSymbols(lineNumber)
 

@@ -55,8 +55,16 @@ module.exports = library.export(
       return nextLineId
     }
 
-    function lineClosedBy(lineId) {
+    function lineClosedBy(editor, lineId) {
+      var closers = editor.linesClosedOn[lineId]
 
+      if (!closers) {
+        return
+      }
+      var lineNumbers = closers.map(editor.lines.find.bind(editor.lines))
+      var latest = Math.max.apply(null, lineNumbers)
+      var index = lineNumbers.indexOf(latest)
+      return closers[index]
     }
 
     Editor.prototype.role = function(lineNumber) {
@@ -67,7 +75,7 @@ module.exports = library.export(
         return "function call arg"
       }
 
-      var openerId = lineClosedBy(lineId)
+      var openerId = lineClosedBy(this, lineId)
       var outro = this.outros[openerId]
 
       if (!openerId) {
