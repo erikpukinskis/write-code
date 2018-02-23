@@ -7,26 +7,30 @@ runTest(
   function(expect, done, Editor) {
     var editor = new Editor()
 
-   
     var segments = editor.parse("\"browser-bridge\"")
     expect(segments.outro).to.equal("\"")
     done.ish("quotes parse")
+
     segments = editor.parse("a")
     segments = editor.parse("\"ap\"")
     segments = editor.parse("\"appearedAWild(\"")
     segments = editor.parse("b)")
     segments = editor.parse("\"browser-bridge\")")
     segments = editor.parse("f)")
+
     segments = editor.parse("\"function \")")
     expect(segments.intro).to.equal("\"function ")
     done.ish("function literal symbol parses")
+
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
     segments = editor.parse("\"b(\"})")
     segments = editor.parse("hi)})")
+
     segments = editor.parse("do.dee.dum(")
     expect(segments.identifierIsh).to.equal("do.dee.dum")
     done.ish("methods parse")
+
     segments = editor.parse("\"function \"")
     expect(segments.intro).to.match(/function/)
     done.ish("function literal without closers parses")
@@ -70,7 +74,6 @@ runTest(
     expectText(0, "browser-bridge")
     done.ish("strings can be unlike symbols")
 
-    debugger
     editor.text(0, "a")
     expectSymbols(0, ["quote"], ["quote"])
     done.ish("string gets quoted!")
@@ -131,6 +134,11 @@ runTest(
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
     done.ish("first line is empty")
+
+    editor.text(2, "function(){")
+    expectSymbols(2, ["quote"], ["quote"])
+    expectText(2, "function")
+    done.ish("messed up function literals don't get mistaken for function calls")
     
     editor.text(2, "function s(){")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])

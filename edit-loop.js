@@ -67,6 +67,7 @@ module.exports = library.export(
 
       var introTokens = editor.getIntroSymbols(editor.line).map(Editor.symbolText)
       var outro = editor.getOutroSymbols(editor.line)
+      // console.log("outro", outro)
       var outroTokens = outro.map(Editor.symbolText)
 
       tokens.setIntro(editable, introTokens)

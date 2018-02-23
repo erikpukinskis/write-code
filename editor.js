@@ -150,7 +150,7 @@ module.exports = library.export(
 
       var isFunctionLiteral = intro == "function"
 
-      var isFunctionCall = !isFunctionLiteral && outro && outro[0] == "("
+      var isFunctionCall = !isFunctionLiteral && segments.outro && !!segments.outro.match(/^\([^{]*$/)
 
       var isStringLiteral = !isFunctionCall
 
