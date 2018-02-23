@@ -30,6 +30,10 @@ module.exports = library.export(
         syncLine(editor.line, editor)
 
         setSelection(editor.lines.get(editor.line), 0)
+      } else {
+        var lineId = editor.lines.get(editor.line)
+        var text = editor.editables[lineId]
+        setSelection(lineId, text.length)
       }
     }
 
@@ -56,6 +60,10 @@ module.exports = library.export(
       }
 
       var words = editor.editables[lineId]
+
+      if (words == "sa") {
+        debugger
+      }
 
       var introTokens = editor.getIntroSymbols(editor.line).map(Editor.symbolText)
       var outroTokens = editor.getOutroSymbols(editor.line).map(Editor.symbolText)

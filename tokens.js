@@ -44,7 +44,7 @@ module.exports = library.export(
     }
 
     function setIntroTokens(editable, tokens) {
-
+      console.log("setting intro tokens to "+JSON.stringify(tokens))
       var childPosition = 0
 
       tokens.forEach(function(expectedToken) {
@@ -52,7 +52,9 @@ module.exports = library.export(
         var node = editable.childNodes[childPosition]
         var isExpectedToken = isToken(node, expectedToken)
 
-        if (!isExpectedToken) {
+        if (isExpectedToken) {
+          node.innerText = expectedToken
+        } else {
           var classes = "token "+classFor(expectedToken)
           if (expectedToken == "\"" || expectedToken == "function") {
             classes += " open"
@@ -63,10 +65,9 @@ module.exports = library.export(
           } else {
             addHtml.inside(editable, html)
           }
-
-          childPosition++
         }
 
+        childPosition++
       })
 
       while(node = editable.childNodes[childPosition]) {
@@ -86,6 +87,7 @@ module.exports = library.export(
     }
 
     function setOutroTokens(editable,tokens) {
+      console.log("setting OUTRO tokens to "+JSON.stringify(tokens))
 
       var tokenCount = tokens.length
       var tokenIndex = tokens.length - 1
