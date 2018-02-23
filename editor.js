@@ -149,7 +149,7 @@ module.exports = library.export(
 
       var isStringLiteral = !isFunctionCall
 
-      // console.log(JSON.stringify(segments, null, 2))
+      console.log(JSON.stringify(segments, null, 2))
 
       if (isFunctionLiteral) {
         expression.kind = "function literal"
@@ -255,11 +255,6 @@ module.exports = library.export(
       return lineId
     }
 
-    Editor.prototype.getLineSource = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
-      return this.getIntroSymbols(lineNumber).map(Editor.symbolText) + this.editables[lineId] + this.getOutroSymbols(lineNumber).map(Editor.symbolText)
-    }
-
     Editor.EMPTY = "\u200b"
 
     function ensureContains(collection, index, value) {
@@ -273,12 +268,6 @@ module.exports = library.export(
     Editor.prototype.getFirstEditable = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
       return this.editables[lineId]
-    }
-
-    function lineToExpression(text) {
-      return {
-        kind: "string literal"
-      }
     }
 
     Editor.prototype.getIntroSymbols = function(lineNumber) {
