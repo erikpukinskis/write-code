@@ -5,9 +5,11 @@ module.exports = library.export(
   ["./tokens", "add-html", "./editor"],
   function(tokens, addHtml, Editor) {
 
+    var currentLine = 0
+
     function editLoop(editor, event) {
 
-      var lineId = editor.lines.get(editor.line)
+      var lineId = editor.lines.get(currentLine)
 
       var sourceNode = event.target.querySelector(".line-"+lineId)
 
@@ -18,34 +20,48 @@ module.exports = library.export(
         event.target.innerHTML = ""
       }
 
-      syncLine(editor.line, editor, source)
+      if (source.match(/function /)) {
+        debugger
+      }
 
-      var synced = editor.line
+      if (source == "\"\"") {
+        editor.text(currentLine, "")
+      } else {
+        editor.text(currentLine, source)
+      }
+
+      syncLine(currentLine, editor)
+
+      var synced = currentLine
+      var nextLineId = editor.lines.get(currentLine + 1)
 
       if (event.key == "Enter") {
         event.preventDefault()
 
         editor.pressEnter()
 
-        syncLine(editor.line, editor)
+        syncLine(currentLine, editor)
 
-        setSelection(editor.lines.get(editor.line), 0)
-      } else {
-        var lineId = editor.lines.get(editor.line)
-        var text = editor.editables[lineId]
-        setSelection(lineId, text.length)
+        setSelection(editor.lines.get(currentLine), 0)
+        return
+      }
+
+      var lineId = editor.lines.get(currentLine)
+      var text = editor.editables[lineId]
+      setSelection(lineId, text.length)
+
+      if (nextLineId) {
+        syncLine(currentLine + 1, editor)
       }
     }
 
-    function syncLine(lineNumber, editor, source) {
+    function syncLine(lineNumber, editor) {
 
       // if (lines.currentWords() == editableText) {
       //   return
       // } else {
       //   lines.setCurrentWords(editableText)
       // }
-
-      editor.text(editor.line, source)
 
       var lineId = editor.lines.get(lineNumber)
 
@@ -61,12 +77,8 @@ module.exports = library.export(
 
       var words = editor.editables[lineId]
 
-      if (words == "sa") {
-        debugger
-      }
-
-      var introTokens = editor.getIntroSymbols(editor.line).map(Editor.symbolText)
-      var outro = editor.getOutroSymbols(editor.line)
+      var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
+      var outro = editor.getOutroSymbols(lineNumber)
       // console.log("outro", outro)
       var outroTokens = outro.map(Editor.symbolText)
 

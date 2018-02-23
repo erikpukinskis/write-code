@@ -14,7 +14,6 @@ module.exports = library.export(
       this.linesClosedOn = {}
       this.editables = {}
       this.lines = forkableList([])
-      this.line = 0
     }
 
     var lastInteger = 1000*50
@@ -140,6 +139,13 @@ module.exports = library.export(
 
     Editor.prototype.detectExpression = function(text) {
 
+      var emptyMatch = text.match(/^[\s\u200b]*"?[\s\u200b]*$/)
+
+      if (emptyMatch) {
+        console.log(text, "is empty")
+        return
+      }
+
       var segments = this.parse(text)
 
       var expression = {}
@@ -195,11 +201,16 @@ module.exports = library.export(
 
       var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
 
-      if (expression.kind == "function literal") {
+      if (!expression) {
+        delete this.intros[lineId]
+        delete this.outros[lineId]
+        this.editables[lineId] = Editor.EMPTY
+
+      } else if (expression.kind == "function literal") {
 
         this.intros[lineId] = "function"
         this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
-        this.editables[lineId] = expression.functionName || Editor.EMPTY
+        this.editables[lineId] = " "+(expression.functionName || "")
 
         var nextLineId = this.addLineAfter(lineNumber)
 

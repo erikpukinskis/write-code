@@ -68,6 +68,26 @@ runTest(
       // expect(editor.cursorColumn()).to.equal(column, "Expected cursor to be at column "+column+" but it was on "+editor.cursor())
     }
 
+    editor.text(0, "")
+    expectSymbols(0, [], [])
+    expectText(0, Editor.EMPTY)
+    done.ish("empty text is empty")
+
+    editor.text(0, "\""+Editor.EMPTY)
+    expectSymbols(0, [], [])
+    expectText(0, Editor.EMPTY)
+    done.ish("single quote is empty")
+
+    editor.text(0, "\"\"")
+    expectSymbols(0, ["quote"], ["quote"])
+    expectText(0, "")
+    done.ish("empty string is string")
+
+    editor.text(0, "\""+Editor.EMPTY+"\"")
+    expectSymbols(0, ["quote"], ["quote"])
+    expectText(0, Editor.EMPTY)
+    done.ish("empty string with nonprinting space is string")
+
     editor.text(0, "\"browser-bridge\"")
     expectSymbols(0, ["quote"], ["quote"])
     done.ish("quotes get recognized")
@@ -129,8 +149,8 @@ runTest(
     done.ish("function literals get recognized")
     expectSymbols(3, [], ["curly-close", "right-paren"])
     done.ish("function literals get closed")
-    expectText(2, Editor.EMPTY)
-    done.ish("function literal name is empty")
+    expectText(2, " ")
+    done.ish("function literal name is a space")
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
     done.ish("first line is empty")
@@ -142,7 +162,7 @@ runTest(
     
     editor.text(2, "function s(){")
     expectSymbols(2, ["function"], ["arguments-open", "arguments-close", "curly-open"])
-    expectText(2, "s")
+    expectText(2, " s")
     done.ish("functions have names")
     // expectCursor(2, 1)
 

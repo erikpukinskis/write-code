@@ -105,32 +105,35 @@ module.exports = library.export(
         return token
       }
 
-      do {
+      if (expectedToken) {
 
-        var classes = "token "+classFor(expectedToken)
-        if (expectedToken == "\"") {
-          classes += " close"
-        }
-        var html = "<quote class=\""+classes+"\">"+expectedToken+"</quote>"
+        do {
 
-        if (testNodeIndex >= 0) {
-          var node = editable.childNodes[testNodeIndex]
+          var classes = "token "+classFor(expectedToken)
+          if (expectedToken == "\"") {
+            classes += " close"
+          }
+          var html = "<quote class=\""+classes+"\">"+expectedToken+"</quote>"
 
-          var isExpectedToken = isToken(node, expectedToken)
+          if (testNodeIndex >= 0) {
+            var node = editable.childNodes[testNodeIndex]
 
-          if (isExpectedToken) {
-            testNodeIndex--
-          } else {            
-            addHtml.after(node, html)
+            var isExpectedToken = isToken(node, expectedToken)
+
+            if (isExpectedToken) {
+              testNodeIndex--
+            } else {            
+              addHtml.after(node, html)
+            }
+
+          } else {
+            addHtml.firstIn(editable, html)
           }
 
-        } else {
-          addHtml.firstIn(editable, html)
-        }
-
-        var expectedToken = nextToken()
-        var ranOutOfTokens = tokenIndex < 0
-      } while(!ranOutOfTokens)
+          var expectedToken = nextToken()
+          var ranOutOfTokens = tokenIndex < 0
+        } while(!ranOutOfTokens)
+      }
 
       while(node = editable.childNodes[testNodeIndex]) {
         if (isToken(node)) {
