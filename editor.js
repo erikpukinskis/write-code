@@ -105,10 +105,12 @@ module.exports = library.export(
     }
 
     Editor.prototype.parse = function(text) {
-      var introOutro = text.match(/^("?function |"?var |")?(.*?)([\[\]}{(),"]*)$/)
-      var intro = introOutro[1]
-      var middle = introOutro[2]
-      var outro = introOutro[3]
+
+      var introMatch = text.match(/^("?function\s|"?var\s)/) || text.match(/^"/)
+      var outroMatch = text.match(/("?function\s|"?var\s|")?(.*?)([\[\]}{(),"]*)$/)
+      var intro = introMatch && introMatch[0]
+      var middle = outroMatch[2]
+      var outro = outroMatch[3]
 
       var regex = /^([.\w]*)((\((\w+,?)*\))|([+<>=:]\w+)+|(.+))*$/
 
@@ -135,9 +137,10 @@ module.exports = library.export(
     }
 
     Editor.prototype.detectExpression = function(text) {
-      var expression = {}
 
       var segments = this.parse(text)
+
+      var expression = {}
 
       var outro = segments.outro && segments.outro.split("") || []
 
@@ -149,7 +152,7 @@ module.exports = library.export(
 
       var isStringLiteral = !isFunctionCall
 
-      console.log(JSON.stringify(segments, null, 2))
+      // console.log("segments", JSON.stringify(segments, null, 2))
 
       if (isFunctionLiteral) {
         expression.kind = "function literal"
@@ -235,11 +238,11 @@ module.exports = library.export(
 
       }
 
-      console.log(JSON.stringify({
-        intro: this.intros[lineId],
-        outro: this.outros[lineId],
-        editable: this.editables[lineId],
-      }, null, 2))
+      // console.log("line", JSON.stringify({
+      //   intro: this.intros[lineId],
+      //   outro: this.outros[lineId],
+      //   editable: this.editables[lineId],
+      // }, null, 2))
 
     }
 

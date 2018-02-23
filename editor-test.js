@@ -1,13 +1,16 @@
 var runTest = require("run-test")(require)
 
+
 runTest(
   "parsing",
   ["./editor"],
   function(expect, done, Editor) {
     var editor = new Editor()
 
+   
     var segments = editor.parse("\"browser-bridge\"")
     expect(segments.outro).to.equal("\"")
+    done.ish("quotes parse")
     segments = editor.parse("a")
     segments = editor.parse("\"ap\"")
     segments = editor.parse("\"appearedAWild(\"")
@@ -16,19 +19,24 @@ runTest(
     segments = editor.parse("f)")
     segments = editor.parse("\"function \")")
     expect(segments.intro).to.equal("\"function ")
+    done.ish("function literal symbol parses")
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
     segments = editor.parse("\"b(\"})")
     segments = editor.parse("hi)})")
     segments = editor.parse("do.dee.dum(")
     expect(segments.identifierIsh).to.equal("do.dee.dum")
+    done.ish("methods parse")
+    segments = editor.parse("\"function \"")
+    expect(segments.intro).to.match(/function/)
+    done.ish("function literal without closers parses")
 
     done()
   }
 )
 
 runTest(
-  "works",
+  "updating from source",
   ["./editor"],
   function(expect, done, Editor) {
 
@@ -58,9 +66,11 @@ runTest(
 
     editor.text(0, "\"browser-bridge\"")
     expectSymbols(0, ["quote"], ["quote"])
+    done.ish("quotes get recognized")
     expectText(0, "browser-bridge")
     done.ish("strings can be unlike symbols")
 
+    debugger
     editor.text(0, "a")
     expectSymbols(0, ["quote"], ["quote"])
     done.ish("string gets quoted!")

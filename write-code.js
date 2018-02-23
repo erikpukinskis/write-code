@@ -58,6 +58,7 @@ module.exports = library.export(
         element.stylesheet(
           body,
           line,
+          lines,
           token,
           focus))
     }
@@ -67,13 +68,14 @@ module.exports = library.export(
       ".line",
       element.style({
         "margin-top": "0.5em",
-        "margin-left": "1em",
-        "font-size": "30px",
         "min-height": "1em" }))
 
     var lines = element.template(
       ".lines" , {
       "contenteditable": "true"},
+      element.style({
+        "margin-left": "1em",
+        "font-size": "30px"}),
       function(bridge, editLoop) {
         this.addAttributes({
           "onkeydown": editLoop.evalable()})

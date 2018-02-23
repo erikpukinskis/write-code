@@ -49,7 +49,7 @@ module.exports = library.export(
 
       var lineId = editor.lines.get(lineNumber)
 
-      console.log("syncing "+lineId+" at "+lineNumber)
+      // console.log("syncing "+lineId+" at "+lineNumber)
 
       var editable = document.querySelector(".line-"+lineId)
 

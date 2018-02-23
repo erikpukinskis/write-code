@@ -44,7 +44,7 @@ module.exports = library.export(
     }
 
     function setIntroTokens(editable, tokens) {
-      console.log("setting intro tokens to "+JSON.stringify(tokens))
+      // console.log("setting intro tokens to "+JSON.stringify(tokens))
       var childPosition = 0
 
       tokens.forEach(function(expectedToken) {
@@ -87,7 +87,7 @@ module.exports = library.export(
     }
 
     function setOutroTokens(editable,tokens) {
-      console.log("setting OUTRO tokens to "+JSON.stringify(tokens))
+      // console.log("setting OUTRO tokens to "+JSON.stringify(tokens))
 
       var tokenCount = tokens.length
       var tokenIndex = tokens.length - 1
