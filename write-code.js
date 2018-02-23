@@ -4,8 +4,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "browser-bridge", "web-element", "add-html", "bridge-module", "./edit-loop", "./lines", "a-wild-universe-appeared"],
-  function(lib, BrowserBridge, element, addHtml, bridgeModule, editLoopXXXX, LinesXXXX, aWildUniverseAppeared) {
+  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared"],
+  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, LinesXXXX, aWildUniverseAppeared) {
 
     function prepareBridge(bridge) {
 
@@ -15,7 +15,7 @@ module.exports = library.export(
       bridge.see("write-code", true)
 
       var focus = element.style(
-        ".editor:focus", {
+        ".lines:focus", {
         "outline": "none"})
 
       var token = element.style(
@@ -43,7 +43,7 @@ module.exports = library.export(
 
       bridge.domReady(
         function() {
-          document.querySelector(".editor").focus()
+          document.querySelector(".lines").focus()
         })
 
       var body = element.style(
@@ -63,25 +63,20 @@ module.exports = library.export(
     }
 
 
-    var line = element.template (
+    var line = element.template(
       ".line",
-      element.style ( {
+      element.style({
         "margin-top": "0.5em",
         "margin-left": "1em",
         "font-size": "30px",
-        "min-height": "1em" } ) ,
-      function(id) {
-        this.addSelector (
-          ".line-"+id ) } )
+        "min-height": "1em" }))
 
-    var editor = element.template(
-      ".editor" , {
+    var lines = element.template(
+      ".lines" , {
       "contenteditable": "true"},
-      line(0),
       function(bridge, editLoop) {
         this.addAttributes({
-          "onkeydown": editLoop.evalable(),
-          "onkeypress": editLoop.evalable()})
+          "onkeydown": editLoop.evalable()})
      })
 
     function prepareSite(site) {
@@ -96,12 +91,12 @@ module.exports = library.export(
 
       prepareBridge(bridge)
 
-      var lines = bridge.defineSingleton(
-        "lines",[
-        bridgeModule(lib, "./lines", bridge),
+      var editor = bridge.defineSingleton(
+        "editor",[
+        bridgeModule(lib, "./editor", bridge),
         treeBinding],
-        function(Lines, tree) {
-          return new Lines(tree)
+        function(Editor, tree) {
+          return new Editor(tree)
         }
       )
 
@@ -109,7 +104,7 @@ module.exports = library.export(
 
       var page = [
         element("h1", "ezjs"),
-        editor(bridge, editLoop.withArgs(lines, bridge.event)),
+        lines(bridge, editLoop.withArgs(editor, bridge.event)),
       ]
 
       bridge.send(page)

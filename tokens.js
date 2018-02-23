@@ -43,27 +43,12 @@ module.exports = library.export(
       return className
     }
 
-    var closersByClassName = {}
+    function setIntroTokens(editable, tokens) {
 
-    function unshiftCloser(editable, token) {
-      var id = editable.className
-      if (!id) {
-        throw new Error("editable has no className")
-      }
-      if (!closersByClassName[id]) {
-        closersByClassName[id] = []
-      }
-      closersByClassName[id].unshift(token)
-    }
-
-    function setIntroTokens(editable, token1, token2, etc) {
-
-      var dependencyCount = 1
       var childPosition = 0
 
-      for(var i=dependencyCount; i<arguments.length; i++) {
+      tokens.forEach(function(expectedToken) {
 
-        var expectedToken = arguments[i]
         var node = editable.childNodes[childPosition]
         var isExpectedToken = isToken(node, expectedToken)
 
@@ -78,9 +63,11 @@ module.exports = library.export(
           } else {
             addHtml.inside(editable, html)
           }
+
+          childPosition++
         }
-        childPosition++
-      }
+
+      })
 
       while(node = editable.childNodes[childPosition]) {
         if (isToken(node)) {
@@ -89,15 +76,16 @@ module.exports = library.export(
           break;
         }
       }
+
+      var wentToEnd = !node
+
+      if (wentToEnd) {
+        text = document.createTextNode("\u200b")
+        editable.appendChild(text)
+      }
     }
 
-    function setOutroTokens(editable,token1, token2, etc) {
-
-      var closers = closersByClassName[editable.className] || []
-
-      var provided = Array.prototype.slice.call(arguments, 1)
-
-      var tokens = provided.concat(closers)
+    function setOutroTokens(editable,tokens) {
 
       var tokenCount = tokens.length
       var tokenIndex = tokens.length - 1
@@ -153,42 +141,10 @@ module.exports = library.export(
 
     }
 
-
-    function inIntroOf(text) {      
-      var introMatch = text.match(/^[\u200b\(\)\{\}\(\)"]+/)
-      var noText = introMatch && introMatch[0].length == text.length
-
-      if (introMatch && !noText) {
-        return splitString(introMatch[0])
-      } else {
-        return introTokens = []
-      }
-    }
-
-    function inOutroOf(text) {
-      var outroMatch = text.match(/[{}()\u200b"]+$/)
-      if (outroMatch) {
-        return splitString(outroMatch[0])
-      } else {
-        return []
-      }
-    }
-
-    function splitString(string) {
-      var array = []
-      for(var i=0; i<string.length; i++) {
-        array.push(string[i])
-      }
-      return array
-    }
-
     return {
       isToken: isToken,
       setIntro: setIntroTokens,
       setOutro: setOutroTokens,
-      inIntroOf: inIntroOf,
-      inOutroOf: inOutroOf,
-      unshiftCloser: unshiftCloser,
     }
   }
 )

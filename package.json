@@ -7,7 +7,8 @@
     "module-library": "*",
     "add-html": "^0.25.0",
     "an-expression": "*",
-    "bridge-module": "*"
+    "bridge-module": "*",
+    "forkable-list": "*"
   },
   "devDependencies": {
     "run-test": "*",

@@ -2,36 +2,38 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "edit-loop",
-  ["./tokens"],
-  function(tokens) {
+  ["./tokens", "add-html", "./editor"],
+  function(tokens, addHtml, Editor) {
 
-    function editLoop(lines, event) {
+    function editLoop(editor, event) {
+
+      var lineId = editor.lines.get(editor.line)
+
+      var sourceNode = event.target.querySelector(".line-"+lineId)
+
+      if (sourceNode) {
+        var source = sourceNode.innerText
+      } else {
+        var source = event.target.innerText
+        event.target.innerHTML = ""
+      }
+
+      syncLine(editor.line, editor, source)
+
+      var synced = editor.line
 
       if (event.key == "Enter") {
-        debugger
         event.preventDefault()
-        var editable = lines.down()
-        var text = document.createTextNode("\u200b")
-        editable.prepend(text)
-        setSelection(text, 0)
-        return
+
+        editor.pressEnter()
+
+        syncLine(editor.line, editor)
+
+        setSelection(editor.lines.get(editor.line), 0)
       }
+    }
 
-      var editable = lines.stay(event)
-      var text = editable.innerText
-
-      console.log("**>"+text+"<**")
-      var introTokens = tokens.inIntroOf(text)
-      var sliceStart = introTokens.length
-      if (text.match(/b/)) {
-        debugger
-      }
-      var outroTokens = tokens.inOutroOf(text)
-      var sliceLength = text.length -outroTokens.length
-
-      var editableText = text.slice(sliceStart, sliceLength)
-
-      // console.log(introTokens.length, "intro tokens,", outroTokens.length, "outro tokens")
+    function syncLine(lineNumber, editor, source) {
 
       // if (lines.currentWords() == editableText) {
       //   return
@@ -39,98 +41,58 @@ module.exports = library.export(
       //   lines.setCurrentWords(editableText)
       // }
 
-      if (editableText.length < 1) {
-        return }
+      editor.text(editor.line, source)
 
-      var emptyLine = editableText.length < 1
+      var lineId = editor.lines.get(lineNumber)
 
-      var functionLiteral = !emptyLine && editableText.match(/^"?function([\s].*)$/)
+      console.log("syncing "+lineId+" at "+lineNumber)
 
-      var functionCall = !functionLiteral && outroTokens[0] == "("
+      var editable = document.querySelector(".line-"+lineId)
 
-      if (!functionCall && editableText.length > 0) {
-        var stringLiteral = editableText }
-
-      var gotFunctionTokenAlready = tokens.isToken(editable.childNodes[0], "function")
-
-      if (functionCall) {
-        // console.log("FUNCTION CALL")
-        var functionName = editableText
-
-        tokens.setIntro(editable)
-        tokens.setOutro(editable, "(")
-
-        var textNode = editable.childNodes[0]
-        textNode.textContent = functionName
-
-        var editable = lines.down()
-
-        tokens.unshiftCloser(editable, ")")
-        tokens.setOutro(editable)
-
-        var text = document.createTextNode("\u200b")
-        editable.prepend(text)
-        setSelection(text, 0)
-
-      } else if (functionLiteral) {
-        // console.log("FUNCTION LITERAL")
-
-        tokens.setIntro(editable, "function")
-
-        tokens.setOutro(editable, "(", ")", "{")
-
-        var textNode = editable.childNodes[1]
-
-        if (!gotFunctionTokenAlready) {
-          textNode.textContent = textNode.textContent.substr("function".length)
-
-          setSelection(textNode, textNode.textContent.length)
-        }
-
-        var editable = lines.down()
-        tokens.unshiftCloser(editable, "}")
-        tokens.setOutro(editable)
-        lines.up()
-
-      } else if (stringLiteral) {
-        // console.log("STRING LITERAL")
-        lines.setAttribute("kind", "string literal")
-        lines.setAttribute("string", stringLiteral)
-        tokens.setIntro(editable, "\"")
-        tokens.setOutro(editable, "\"")
+      if (!editable) {
+        var html = "<div class=\"line line-"+lineId+"\"></div>";
+        var nodes = addHtml.inside(document.querySelector(".lines"), html)
+        editable = nodes[0]
       }
 
-      // done with onEditorEvent
+      var words = editor.editables[lineId]
+
+      var introTokens = editor.getIntroSymbols(editor.line).map(Editor.symbolText)
+      var outroTokens = editor.getOutroSymbols(editor.line).map(Editor.symbolText)
+
+      tokens.setIntro(editable, introTokens)
+      // setIntro guarantees at least one text node at this point
+      tokens.setOutro(editable, outroTokens)
+
+      var textNode = editable.childNodes[introTokens.length]
+
+      textNode.textContent = words
     }
 
-    function setSelection(node, selectionStart) {
+    function setSelection(lineId, selectionStart) {
+      var editable = document.querySelector(".line-"+lineId)
+
+      for(var i=0; i<editable.childNodes.length; i++) {
+        var textNode = editable.childNodes[i]
+        if (textNode.nodeType == Node.TEXT_NODE) {
+          break;
+        } else {
+          textNode = undefined
+        }
+      }
+
       var range = document.createRange()
-      range.setStart(node, selectionStart)
+      range.setStart(textNode, selectionStart)
 
       var selection = window.getSelection()
       selection.removeAllRanges()
       selection.addRange(range)
     }
 
-    function firstToken(tokens, expectedToken) {
-      if (tokens[0] != expectedToken) {
-        tokens.unshift(expectedToken)
-      }
-    }
-
-    function trimTrailingQuote(text) {
-      var lastChar = text.substr(text.length - 1)
-      if (lastChar == "\"") {
-        return text.substr(0, text.length - 1)
-      } else {
-        return text
-      }
-    }
-
     var debounce
     var event
 
-    return function(lines, newEvent) {
+    return function(editor, newEvent) {
       if (newEvent.key == "Enter") {
         newEvent.preventDefault()
       }
@@ -140,7 +102,7 @@ module.exports = library.export(
         debounce = null
       }
       debounce = setTimeout(function() {
-        editLoop(lines, event)
+        editLoop(editor, event)
       })
     }
   }

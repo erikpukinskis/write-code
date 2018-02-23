@@ -5,7 +5,8 @@ module.exports = library.export(
   ["forkable-list"],
   function(forkableList) {
 
-    function Editor() {
+    function Editor(tree) {
+      this.tree = tree
       this.intros = {}
       this.outros = {}
       this.commas = {}
@@ -13,6 +14,7 @@ module.exports = library.export(
       this.linesClosedOn = {}
       this.editables = {}
       this.lines = forkableList([])
+      this.line = 0
     }
 
     var lastInteger = 1000*50
@@ -76,7 +78,7 @@ module.exports = library.export(
       }
     }
 
-    var symbols = {
+    var symbolText = {
       "quote": "\"",
       "left-paren": "(",
       "right-paren": "(",
@@ -88,8 +90,18 @@ module.exports = library.export(
       "var": "var",
     }
 
-    function symbolNameToText(name) {
-      return symbols[name]
+    var symbolNames = {}
+    for(var name in symbolText) {
+      var text = symbolText[name]
+      symbolNames[name] = text
+    }
+
+    Editor.symbolName = function(text) {
+      return symbolNames[text]
+    }
+
+    Editor.symbolText = function(name) {
+      return symbolText[name]
     }
 
     Editor.prototype.parse = function(text) {
@@ -137,7 +149,7 @@ module.exports = library.export(
 
       var isStringLiteral = !isFunctionCall
 
-      console.log(JSON.stringify(segments, null, 2))
+      // console.log(JSON.stringify(segments, null, 2))
 
       if (isFunctionLiteral) {
         expression.kind = "function literal"
@@ -172,7 +184,7 @@ module.exports = library.export(
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
 
-      console.log(JSON.stringify(expression, null, 2))
+      // console.log(JSON.stringify(expression, null, 2))
 
       var lineId = this.ensureSomethingAt(lineNumber)
 
@@ -223,6 +235,12 @@ module.exports = library.export(
 
       }
 
+      console.log(JSON.stringify({
+        intro: this.intros[lineId],
+        outro: this.outros[lineId],
+        editable: this.editables[lineId],
+      }, null, 2))
+
     }
 
     Editor.prototype.ensureSomethingAt = function(lineNumber) {
@@ -239,7 +257,7 @@ module.exports = library.export(
 
     Editor.prototype.getLineSource = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
-      return this.getIntroSymbols(lineNumber).map(symbolNameToText) + this.editables[lineId] + this.getOutroSymbols(lineNumber).map(symbolNameToText)
+      return this.getIntroSymbols(lineNumber).map(Editor.symbolText) + this.editables[lineId] + this.getOutroSymbols(lineNumber).map(Editor.symbolText)
     }
 
     Editor.EMPTY = "\u200b"
