@@ -66,7 +66,8 @@ module.exports = library.export(
       }
 
       var introTokens = editor.getIntroSymbols(editor.line).map(Editor.symbolText)
-      var outroTokens = editor.getOutroSymbols(editor.line).map(Editor.symbolText)
+      var outro = editor.getOutroSymbols(editor.line)
+      var outroTokens = outro.map(Editor.symbolText)
 
       tokens.setIntro(editable, introTokens)
       // setIntro guarantees at least one text node at this point
