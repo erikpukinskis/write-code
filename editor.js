@@ -24,6 +24,9 @@ module.exports = library.export(
     }
 
     Editor.prototype.pressEnter = function(lineNumber) {
+      if (typeof lineNumber != "number") {
+        throw new Error("what line are we pressing Enter from?")
+      }
       var lineId = this.lines.get(lineNumber)
       var role = this.role(lineNumber)
 
@@ -52,25 +55,24 @@ module.exports = library.export(
       return nextLineId
     }
 
+    function lineClosedBy(lineId) {
+
+    }
+
     Editor.prototype.role = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
-      var closers = this.linesClosedOn[lineId]
 
       if (this.commas[lineId]) {
         throw new Error("probably an arg?")
         return "function call arg"
       }
 
-      if (!closers) {
-        return "opener"
-      }
-      var lineNumbers = closers.map(this.lines.find.bind(this.lines))
-      var latest = Math.max.apply(null, lineNumbers)
-      var index = lineNumbers.indexOf(latest)
-      var parentId = closers[index]
+      var openerId = lineClosedBy(lineId)
+      var outro = this.outros[openerId]
 
-      var outro = this.outros[parentId]
-      if (outro == "left-paren") {
+      if (!openerId) {
+        return "opener"
+      } else if (outro == "left-paren") {
         return "function call argument"
       } else {
         throw new Error("not sure")
@@ -80,7 +82,7 @@ module.exports = library.export(
     var symbolText = {
       "quote": "\"",
       "left-paren": "(",
-      "right-paren": "(", 
+      "right-paren": ")", 
       "arguments-open": "(",
       "arguments-close": ")", 
       "curly-open": "{",

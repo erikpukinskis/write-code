@@ -9,6 +9,19 @@ module.exports = library.export(
 
     function editLoop(editor, event) {
 
+
+      if (event.key == "Enter") {
+        debugger
+        editor.pressEnter(currentLine)
+
+        currentLine++
+
+        var lineId = editor.lines.get(currentLine)
+
+        setSelection(lineId, 0)
+        return
+      }
+
       var lineId = editor.lines.get(currentLine)
 
       var sourceNode = event.target.querySelector(".line-"+lineId)
@@ -30,17 +43,6 @@ module.exports = library.export(
 
       var synced = currentLine
       var nextLineId = editor.lines.get(currentLine + 1)
-
-      if (event.key == "Enter") {
-        event.preventDefault()
-
-        editor.pressEnter()
-
-        syncLine(currentLine, editor)
-
-        setSelection(editor.lines.get(currentLine), 0)
-        return
-      }
 
       var lineId = editor.lines.get(currentLine)
       var text = editor.editables[lineId]
@@ -65,6 +67,9 @@ module.exports = library.export(
 
       var words = editor.editables[lineId]
 
+      if (editor.getIntroSymbols(lineNumber)[0] == "function") {
+        debugger
+      }
       var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
       var outro = editor.getOutroSymbols(lineNumber)
 
