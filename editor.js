@@ -215,15 +215,19 @@ module.exports = library.export(
 
       if (!expression) {
         delete this.intros[lineId]
+        delete this.separators[lineId]
         delete this.outros[lineId]
         this.firstHalves[lineId] = Editor.EMPTY
+        delete this.secondHalves[lineId]
 
       } else if (expression.kind == "function literal") {
 
         this.intros[lineId] = "function"
-        this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
+        this.separators[lineId] = "arguments-open"
+        this.outros[lineId] = ["arguments-close","curly-open"]
         this.firstHalves[lineId] = " "+(expression.functionName || "")
-
+        this.secondHalves[lineId] = Editor.EMPTY
+        
         var nextLineId = this.addLineAfter(lineNumber)
 
         delete this.linesClosedOn[lineId]
@@ -235,12 +239,11 @@ module.exports = library.export(
       } else if (expression.kind == "function call") {
 
         this.firstHalves[lineId] = expression.functionName
-
-        if (this.outros[lineId] == "left-paren") {
-          return
-        }
+        delete this.secondHalves[lineId]
 
         delete this.intros[lineId]
+        delete this.separators[lineId]
+
         this.outros[lineId] = "left-paren"
         this.howToClose[lineId] = "right-paren"
 
@@ -253,13 +256,16 @@ module.exports = library.export(
           var nextLineId = this.ensureSomethingAt(lineNumber + 1)
         }
 
+        debugger
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "string literal") {
 
         this.intros[lineId] = "quote"
+        delete this.separators[lineId]
         this.outros[lineId] = "quote"
         this.firstHalves[lineId] = expression.string
+        delete this.secondHalves[lineId]
       }
     }
 
@@ -282,7 +288,9 @@ module.exports = library.export(
         collection[index] = []
       }
 
-      collection[index].unshift(value)
+      if (collection[index].indexOf(value) < 0) {
+        collection[index].unshift(value)
+      }
     }
 
     Editor.prototype.getFirstHalf = function(lineNumber) {

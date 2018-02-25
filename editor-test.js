@@ -57,7 +57,7 @@ runTest(
       expect(expectedIntro).to.equal(intro, message)
 
       var separator = editor.getSeparator(line)
-      var message = "expected separator "+JSON.stringify(expectedSeparator)+" on line "+line+" but editor thinks they are "+JSON.stringify(separator)
+      var message = "expected separator "+JSON.stringify(expectedSeparator)+" on line "+line+" but editor thinks it is "+JSON.stringify(separator)
       expect(expectedSeparator).to.equal(separator, message)
 
       var outro = editor.getOutroSymbols(line)
@@ -171,12 +171,12 @@ runTest(
 
     editor.text(2, "\"function \")", Editor.EMPTY)
 
-    expectSymbols(2, "function", undefined, ["arguments-open", "arguments-close", "curly-open"])
+    expectSymbols(2, "function", "arguments-open", ["arguments-close", "curly-open"])
     done.ish("function literals get recognized")
 
     expectSymbols(3, undefined, undefined, ["curly-close", "right-paren"])
     done.ish("function literals get closed")
-    expectText(2, " ")
+    expectText(2, " ", Editor.EMPTY)
     done.ish("function literal name is a space and argument signature is empty")
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
@@ -188,8 +188,8 @@ runTest(
     done.ish("messed up function literals don't get mistaken for function calls")
     
     editor.text(2, "function s(){")
-    expectSymbols(2, "function", undefined, ["arguments-open", "arguments-close", "curly-open"])
-    expectText(2, " s")
+    expectSymbols(2, "function", "arguments-open", ["arguments-close", "curly-open"])
+    expectText(2, " s", Editor.EMPTY)
     done.ish("functions have names")
     // expectCursor(2, 1)
 
