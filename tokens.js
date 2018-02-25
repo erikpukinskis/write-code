@@ -43,10 +43,16 @@ module.exports = library.export(
       return className
     }
 
-    function setIntroTokens(editable, tokens) {
+    function setIntroToken(editable, token) {
       // console.log("setting intro tokens to "+JSON.stringify(tokens))
       var childPosition = 0
 
+      if (!token) {
+        var tokens = []
+      } else {
+        var tokens = [token]
+      }
+  
       tokens.forEach(function(expectedToken) {
 
         var node = editable.childNodes[childPosition]
@@ -148,7 +154,7 @@ module.exports = library.export(
 
     return {
       isToken: isToken,
-      setIntro: setIntroTokens,
+      setIntro: setIntroToken,
       setOutro: setOutroTokens,
     }
   }

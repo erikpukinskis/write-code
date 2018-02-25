@@ -295,14 +295,18 @@ module.exports = library.export(
       return this.secondHalves[lineId]
     }
 
-    Editor.prototype.getIntroSymbols = function(lineNumber) {
+    Editor.prototype.getIntroSymbol = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
       var symbol = this.intros[lineId]
-      if (symbol) {
-        return [symbol]
-      } else {
-        return []
-      }
+
+      return symbol
+    } 
+
+    Editor.prototype.getSeparator = function(lineNumber) {
+      var lineId = this.lines.get(lineNumber)
+      var symbol = this.separators[lineId]
+
+      return symbol
     } 
 
     Editor.prototype.getOutroSymbols = function(lineNumber) {

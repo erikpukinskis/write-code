@@ -85,16 +85,21 @@ module.exports = library.export(
 
       var words = editor.getFirstHalf(lineNumber)
 
-      var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
+      var introToken = Editor.symbolText(editor.getIntroSymbol(lineNumber))
       var outro = editor.getOutroSymbols(lineNumber)
 
       var outroTokens = outro.map(Editor.symbolText)
 
-      tokens.setIntro(editable, introTokens)
+      tokens.setIntro(editable, introToken)
+
       // setIntro guarantees at least one text node at this point
       tokens.setOutro(editable, outroTokens)
 
-      var textNode = editable.childNodes[introTokens.length]
+      if (introToken) {
+        var textNode = editable.childNodes[1]
+      } else {
+        var textNode = editable.childNodes[0]
+      }
 
       textNode.textContent = words
     }
