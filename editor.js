@@ -12,7 +12,9 @@ module.exports = library.export(
       this.commas = {}
       this.howToClose = {}
       this.linesClosedOn = {}
-      this.editables = {}
+      this.firstHalves = {}
+      this.separators = {}
+      this.secondHalves = {}
       this.lines = forkableList([])
     }
 
@@ -39,7 +41,7 @@ module.exports = library.export(
 
     Editor.prototype.addLineAfter = function(lineNumber) {
       var nextLineId = this.lines.get(lineNumber + 1)
-      var nextLineIsEmpty = this.editables[nextLineId] == Editor.EMPTY
+      var nextLineIsEmpty = this.firstHalves[nextLineId] == Editor.EMPTY
 
       if (nextLineIsEmpty) {
         return        
@@ -214,13 +216,13 @@ module.exports = library.export(
       if (!expression) {
         delete this.intros[lineId]
         delete this.outros[lineId]
-        this.editables[lineId] = Editor.EMPTY
+        this.firstHalves[lineId] = Editor.EMPTY
 
       } else if (expression.kind == "function literal") {
 
         this.intros[lineId] = "function"
         this.outros[lineId] = ["arguments-open","arguments-close","curly-open"]
-        this.editables[lineId] = " "+(expression.functionName || "")
+        this.firstHalves[lineId] = " "+(expression.functionName || "")
 
         var nextLineId = this.addLineAfter(lineNumber)
 
@@ -232,7 +234,7 @@ module.exports = library.export(
 
       } else if (expression.kind == "function call") {
 
-        this.editables[lineId] = expression.functionName
+        this.firstHalves[lineId] = expression.functionName
 
         if (this.outros[lineId] == "left-paren") {
           return
@@ -257,7 +259,7 @@ module.exports = library.export(
 
         this.intros[lineId] = "quote"
         this.outros[lineId] = "quote"
-        this.editables[lineId] = expression.string
+        this.firstHalves[lineId] = expression.string
       }
     }
 
@@ -267,8 +269,8 @@ module.exports = library.export(
         lineId = generateId()
         this.lines.set(lineNumber, lineId)
       }
-      if (!this.editables[lineId]) {
-        this.editables[lineId] = Editor.EMPTY
+      if (!this.firstHalves[lineId]) {
+        this.firstHalves[lineId] = Editor.EMPTY
       }
       return lineId
     }
@@ -283,9 +285,14 @@ module.exports = library.export(
       collection[index].unshift(value)
     }
 
-    Editor.prototype.getFirstEditable = function(lineNumber) {
+    Editor.prototype.getFirstHalf = function(lineNumber) {
       var lineId = this.lines.get(lineNumber)
-      return this.editables[lineId]
+      return this.firstHalves[lineId]
+    }
+
+    Editor.prototype.getSecondHalf = function(lineNumber) {
+      var lineId = this.lines.get(lineNumber)
+      return this.secondHalves[lineId]
     }
 
     Editor.prototype.getIntroSymbols = function(lineNumber) {

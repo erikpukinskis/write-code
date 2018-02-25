@@ -49,7 +49,7 @@ module.exports = library.export(
       var nextLineId = editor.lines.get(currentLine + 1)
 
       var lineId = editor.lines.get(currentLine)
-      var text = editor.editables[lineId]
+      var text = editor.getFirstHalf(currentLine)
       setSelection(lineId, text.length)
 
       if (nextLineId) {
@@ -83,7 +83,7 @@ module.exports = library.export(
         editable = nodes[0]
       }
 
-      var words = editor.editables[lineId]
+      var words = editor.getFirstHalf(lineNumber)
 
       var introTokens = editor.getIntroSymbols(lineNumber).map(Editor.symbolText)
       var outro = editor.getOutroSymbols(lineNumber)

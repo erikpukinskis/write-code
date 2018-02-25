@@ -60,7 +60,7 @@ runTest(
     }
 
     function expectText(line, text) {
-      expect(editor.getFirstEditable(line)).to.equal(text)
+      expect(editor.getFirstHalf(line)).to.equal(text)
     }
 
     function expectCursor(line, column) {
