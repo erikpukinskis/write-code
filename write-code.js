@@ -27,6 +27,12 @@ module.exports = library.export(
           "margin-left": "0.25em",
           "margin-right": "0.25em",
           "display": "inline-block",
+          "width": "0.6em",
+          "text-align": "center",
+
+          ".function": {
+            "width": "auto",
+          },
 
           ".open": {
             "margin-right": "0"
