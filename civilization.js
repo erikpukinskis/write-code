@@ -1,23 +1,24 @@
 function commission() {}
 
-function makeQuote(){[
-  "marketer finds client",
-  "builder passes on client",
-  "designer meets with client",
-  "designer drafts commission and estimate",
-  "design/build mentor runs work study for designer",
-  "builder meets client",
-  "builder corrects estimate, lists possible cuts with monetary values",
-  "owner adds percentage",
-  "designer negotiates quote with client",
-  "designer edits final commission",
-  "be honest and open and real with the client",
-  "4 parties sign commission",
-  "owner advances pay and materials"]}
+function makeQuote(){
+  plan(
+    "marketer finds client",
+    "builder passes on client",
+    "designer meets with client",
+    "designer drafts commission and estimate",
+    "design/build mentor runs work study for designer",
+    "builder meets client",
+    "builder corrects estimate, lists possible cuts with monetary values",
+    "owner adds percentage",
+    "designer negotiates quote with client",
+    "designer edits final commission",
+    "be honest and open and real with the client",
+    "4 parties sign commission",
+    "owner advances pay and materials")}
 
-commission([
-  "Floor panel",
-  "x5",
+commission(
+  "name: Floor panel",
+  "quantity: 5",
   "Cut two tracks to 48 inches",
   "Cut 4 studs to 96 inches",
   "Lay out tracks and studs, leftmost 3/4 inches inset, 12 inches, 24 inches, and 36 inches on center",
@@ -28,9 +29,9 @@ commission([
   "Set 2x3 in right side with 5/8 inches sticking out and screw",
   "Flip and insulate",
   "Lay 1/2 inches plywood aligned with tracks",
-  "Screw tracks, and along left edge, 12 inches, 24 inches, and 36 inches on center, and 1.25 inches from the right"])
+  "Screw tracks, and along left edge, 12 inches, 24 inches, and 36 inches on center, and 1.25 inches from the right")
 
-commission([
+commission(
   "Z-panel",
   "x5",
   "skinny 1 inches screws for 2x2s",
@@ -51,9 +52,9 @@ commission([
   "Cut 3/8 inches ply to 96 - 2.5 - 3/8 - 3/4 = 92 3/8 inches CORRECT",
   "Lay ply 5/8 inches from left edge and aligned with the bottom track",
   "Screw on the left",
-  "Screw 2.5 inches from the right, 18.5 inches, and 32.5 inches from the right"])
+  "Screw 2.5 inches from the right, 18.5 inches, and 32.5 inches from the right")
 
-commission([
+commission(
   "A-panel",
   "x4",
   "Cut two 2x2s to 89 3/8 inches",
@@ -72,4 +73,4 @@ commission([
   "screw at 16 inches and 32 inches and along both edges",
   "Flip the panel",
   "Screw at 3 1/8 inches from the left, at 16 inches and 32 inches and 2.5 inches from the right edge",
-  "Note: the z-panel plywood gap is 5/8, but the A-panel corner gap is only 3/8!"])
+  "Note: the z-panel plywood gap is 5/8, but the A-panel corner gap is only 3/8!")
