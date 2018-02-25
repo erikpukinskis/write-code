@@ -65,8 +65,12 @@ runTest(
       expect(expectedOutro).to.deep.equal(outro, otherMessage)
     }
 
-    function expectText(line, text) {
-      expect(editor.getFirstHalf(line)).to.equal(text)
+    function expectText(line, firstHalf, secondHalf) {
+      var message = "expected first half of line "+line+" to be "+JSON.stringify(firstHalf)
+      expect(editor.getFirstHalf(line)).to.equal(firstHalf, message)
+
+      message = "expected second half of line "+line+" to be "+JSON.stringify(secondHalf)
+      expect(editor.getSecondHalf(line)).to.equal(secondHalf, message)
     }
 
     function expectCursor(line, column) {
@@ -169,10 +173,11 @@ runTest(
 
     expectSymbols(2, "function", undefined, ["arguments-open", "arguments-close", "curly-open"])
     done.ish("function literals get recognized")
+
     expectSymbols(3, undefined, undefined, ["curly-close", "right-paren"])
     done.ish("function literals get closed")
     expectText(2, " ")
-    done.ish("function literal name is a space")
+    done.ish("function literal name is a space and argument signature is empty")
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
     done.ish("first line is empty")
