@@ -130,15 +130,20 @@ module.exports = library.export(
         middle = middle.replace(Editor.EMPTY, "")
       }
 
-      var regex = /^([.\w]*)((\((\w+,?)*\))|([+<>=:]\w+)+|(.+))*$/
+      if (middle) {
+        var functionLiteralMatch = middle.match(/^\s*(\w*)\s*\(\s*((\w*)\s*(,\s*\w+\s*)*)/)
 
-      var parts = (middle||"").match(regex)
+        var identiferMatch = middle.match(/^\s*([\.\w]+)\s*$/)
 
-      var identifierIsh = parts[1]
-      var notIdentifier = parts[2]
-      var argumentSignature = parts[3]
-      var moarExpression = parts[5]
-      var notCode = parts[6]
+        if (functionLiteralMatch) {
+          var identifierIsh = functionLiteralMatch[1]
+          var argumentSignature = functionLiteralMatch[2]
+        } else if (identiferMatch) {
+          var identifierIsh = identiferMatch[1]
+        } else {
+          var notIdentifier = middle
+        }
+      }
 
       var segments = {
         text: text,
@@ -148,7 +153,6 @@ module.exports = library.export(
         identifierIsh: identifierIsh,
         notIdentifier: notIdentifier,
         argumentSignature: argumentSignature,
-        moarExpression: moarExpression,
       }
 
       return segments
@@ -179,6 +183,11 @@ module.exports = library.export(
       if (isFunctionLiteral) {
         expression.kind = "function literal"
         expression.functionName = segments.identifierIsh
+
+        if (segments.argumentSignature) {
+          expression.argumentNames = segments.argumentSignature.split(/\s*,\s*/)
+        }
+
       } else if (isFunctionCall) {
         expression.kind = "function call"
         expression.functionName = segments.identifierIsh
@@ -226,7 +235,12 @@ module.exports = library.export(
         this.separators[lineId] = "arguments-open"
         this.outros[lineId] = ["arguments-close","curly-open"]
         this.firstHalves[lineId] = " "+(expression.functionName || "")
-        this.secondHalves[lineId] = Editor.EMPTY
+
+        if (expression.argumentNames) {
+          this.secondHalves[lineId] = expression.argumentNames.join(", ")
+        } else {
+          this.secondHalves[lineId] = Editor.EMPTY
+        }
 
         var nextLineId = this.addLineAfter(lineNumber)
 

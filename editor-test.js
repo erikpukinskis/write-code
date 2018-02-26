@@ -1,16 +1,23 @@
 var runTest = require("run-test")(require)
 
 
+
 runTest(
-  "parsing",
+  "quotes parse",
   ["./editor"],
   function(expect, done, Editor) {
     var editor = new Editor()
-
     var segments = editor.parse("\"browser-bridge\"")
     expect(segments.outro).to.equal("\"")
-    done.ish("quotes parse")
+    done()
+  }
+)
 
+runTest(
+  "function literal symbol parses",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
     segments = editor.parse("a")
     segments = editor.parse("\"ap\"")
     segments = editor.parse("\"appearedAWild(\"")
@@ -20,21 +27,45 @@ runTest(
 
     segments = editor.parse("\"function \")")
     expect(segments.intro).to.equal("\"function ")
-    done.ish("function literal symbol parses")
 
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
-    segments = editor.parse("\"b(\"})")
+    done()
+  }
+)
+
+runTest(
+  "method parses",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("\"b(\"})")
     segments = editor.parse("hi)})")
 
     segments = editor.parse("do.dee.dum(")
     expect(segments.identifierIsh).to.equal("do.dee.dum")
-    done.ish("methods parse")
+    done()
+  }
+)
 
+runTest(
+  "function literal without closers parses",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
     segments = editor.parse("\"function \"")
     expect(segments.intro).to.match(/function/)
-    done.ish("function literal without closers parses")
+    done()
+  }
+)
 
+runTest(
+  "function argument signatures parse",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("function foo(bar, baz){")
+    expect(segments.argumentSignature).to.equal("bar, baz")
     done()
   }
 )
@@ -192,6 +223,12 @@ runTest(
     expectText(2, " s", Editor.EMPTY)
     done.ish("functions have names")
     // expectCursor(2, 1)
+
+    debugger
+    editor.text(2, "function s(boofer, doofer){")
+    expectSymbols(2, "function", "arguments-open", ["arguments-close", "curly-open"])
+    expectText(2, " s", "boofer, doofer")
+    done.ish("functions have signatures")
 
     editor.pressEnter(2)
     expectText(3, Editor.EMPTY)
