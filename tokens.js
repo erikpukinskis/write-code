@@ -43,19 +43,10 @@ module.exports = library.export(
       return className
     }
 
-    function setIntroToken(editable, token) {
-      // console.log("setting intro tokens to "+JSON.stringify(tokens))
-      var childPosition = 0
+    function setIntroToken(editable, expectedToken) {
 
-      if (!token) {
-        var tokens = []
-      } else {
-        var tokens = [token]
-      }
-  
-      tokens.forEach(function(expectedToken) {
-
-        var node = editable.childNodes[childPosition]
+      if (expectedToken) {
+        var node = editable.childNodes[0]
         var isExpectedToken = isToken(node, expectedToken)
 
         if (isExpectedToken) {
@@ -73,10 +64,12 @@ module.exports = library.export(
           }
         }
 
-        childPosition++
-      })
+        var removeTokensFrom = 1
+      } else {
+        var removeTokensFrom = 0
+      }
 
-      while(node = editable.childNodes[childPosition]) {
+      while(node = editable.childNodes[removeTokensFrom]) {
         if (isToken(node)) {
           editable.removeChild(node)
         } else {
@@ -90,6 +83,71 @@ module.exports = library.export(
         text = document.createTextNode("\u200b")
         editable.appendChild(text)
       }
+    }
+
+    function setSeparator(editable, separator, secondHalf) {
+
+      var first = editable.childNodes[0]
+
+      if (isToken(first)) {
+        var separatorIndex = 2
+      } else {
+        var separatorIndex = 1
+      }
+
+      if (!separator) {
+        deleteNonTokensFrom(editable, separatorIndex)
+        return
+      }
+
+      var maybeSeparator = editable.childNodes[separatorIndex]
+
+      var maybeSecondHalf = editable.childNodes[separatorIndex + 1]
+
+      var isAlreadySeparated = isToken(maybeSeparator) && isTextNode(maybeSecondHalf)
+
+      var hasClosingTokens = !isAlreadySeparated && isToken(maybeSeparator)
+
+      if (isAlreadySeparated) {
+        maybeSeparator.innerText = separator
+        maybeSecondHalf.innerText = secondHalf
+
+      } else if (hasClosingTokens) {
+        var nextNode = maybeSeparator
+
+        var newSeparatorNode = document.createElement("div")
+        newSeparatorNode.classList.add("token")
+        newSeparatorNode.innerText = separator
+
+        var newSecondHalfNode = document.createTextNode(secondHalf)
+
+        if (nextNode) {
+          editable.insertBefore(newSeparatorNode, nextNode)
+          editable.insertBefore(newSecondHalfNode, nextNode)
+        } else {
+          editable.appendChild(newSeparatorNode)        
+          editable.appendChild(newSecondHalfNode)
+        }
+      }
+
+      deleteNonTokensFrom(editable, separatorIndex + 2)
+    }
+
+    function deleteNonTokensFrom(editable, position) {
+      while(node = editable.childNodes[position]) {
+        if (isToken(node)) {
+          position++
+        } else {
+          editable.removeChild(node)
+        }
+      }
+    }
+
+    function isTextNode(node) {
+      if (!node) {
+        return false
+      }
+      return node.nodeType === Node.TEXT_NODE
     }
 
     function setOutroTokens(editable,tokens) {
@@ -156,6 +214,7 @@ module.exports = library.export(
       isToken: isToken,
       setIntro: setIntroToken,
       setOutro: setOutroTokens,
+      setSeparator: setSeparator,
     }
   }
 )

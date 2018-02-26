@@ -9,7 +9,6 @@ module.exports = library.export(
 
     function editLoop(editor, event) {
 
-
       if (event.key == "Enter") {
 
         editor.pressEnter(currentLine)
@@ -83,25 +82,27 @@ module.exports = library.export(
         editable = nodes[0]
       }
 
-      var words = editor.getFirstHalf(lineNumber)
-
       var introToken = Editor.symbolText(editor.getIntroSymbol(lineNumber))
-      var outro = editor.getOutroSymbols(lineNumber)
-
-      var outroTokens = outro.map(Editor.symbolText)
+      var separator = Editor.symbolText(editor.getSeparator(lineNumber))
+      var outroTokens = editor.getOutroSymbols(lineNumber).map(Editor.symbolText)
 
       tokens.setIntro(editable, introToken)
 
       // setIntro guarantees at least one text node at this point
-      tokens.setOutro(editable, outroTokens)
-
       if (introToken) {
-        var textNode = editable.childNodes[1]
+        editable.childNodes[1].textContent = editor.getFirstHalf(lineNumber)
       } else {
-        var textNode = editable.childNodes[0]
+        editable.childNodes[0].textContent = editor.getFirstHalf(lineNumber)
       }
 
-      textNode.textContent = words
+      tokens.setSeparator(
+        editable,
+        separator,
+        editor.getSecondHalf(lineNumber))
+
+      // setSeparator guarantees there are only symbols after the intro/first half/separator/second half
+
+      tokens.setOutro(editable, outroTokens)
     }
 
     function setSelection(lineId, selectionStart) {

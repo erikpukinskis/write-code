@@ -227,7 +227,7 @@ module.exports = library.export(
         this.outros[lineId] = ["arguments-close","curly-open"]
         this.firstHalves[lineId] = " "+(expression.functionName || "")
         this.secondHalves[lineId] = Editor.EMPTY
-        
+
         var nextLineId = this.addLineAfter(lineNumber)
 
         delete this.linesClosedOn[lineId]
@@ -256,7 +256,6 @@ module.exports = library.export(
           var nextLineId = this.ensureSomethingAt(lineNumber + 1)
         }
 
-        debugger
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "string literal") {
