@@ -28,6 +28,11 @@ module.exports = library.export(
 
       var sourceNode = event.target.querySelector(".line-"+lineId)
 
+      var range = window.getSelection().getRangeAt(0)
+      var cursorPosition = range.startOffset
+      var node = range.commonAncestorContainer
+      var selectionIndex = Array.prototype.indexOf.call(node.parentNode.childNodes, node)
+      
       if (sourceNode) {
         var source = sourceNode.innerText
       } else {
@@ -45,7 +50,7 @@ module.exports = library.export(
         editor.text(currentLine, source)
       }
 
-      syncLine(currentLine, editor)
+      var sync = syncLine(currentLine, editor)
 
       if (event.key == "(" && editor.role(currentLine) == "function literal opener") {
 
@@ -55,13 +60,18 @@ module.exports = library.export(
         return
       }
 
-      var synced = currentLine
       var nextLineId = editor.lines.get(currentLine + 1)
 
       var lineId = editor.lines.get(currentLine)
       var text = editor.getFirstHalf(currentLine)
 
-      setSelection(lineId, text.length)
+      cursorPosition -= sync.charsRemoved
+
+      if (selectionIndex > 2) {
+        setSelection(lineId, null, cursorPosition)
+      } else {
+        setSelection(lineId, cursorPosition)
+      }
 
       if (nextLineId) {
         syncLine(currentLine + 1, editor)
@@ -100,12 +110,20 @@ module.exports = library.export(
 
       tokens.setIntro(editable, introToken)
 
+      var out = {}
+
       // setIntro guarantees at least one text node at this point
       if (introToken) {
-        editable.childNodes[1].textContent = editor.getFirstHalf(lineNumber)
+        var textNode = editable.childNodes[1]
       } else {
-        editable.childNodes[0].textContent = editor.getFirstHalf(lineNumber)
+        var textNode = editable.childNodes[0]
       }
+
+      var originalLength = textNode.textContent.length
+      var newContent = editor.getFirstHalf(lineNumber)
+      textNode.textContent = newContent
+      out.charsRemoved = originalLength - newContent.length
+      console.log(out)
 
       tokens.setSeparator(
         editable,
@@ -115,6 +133,8 @@ module.exports = library.export(
       // setSeparator guarantees there are only symbols after the intro/first half/separator/second half
 
       tokens.setOutro(editable, outroTokens)
+
+      return out
     }
 
     function setSelection(lineId, firstHalfStart, secondHalfStart) {
@@ -126,7 +146,7 @@ module.exports = library.export(
         var textNode = editable.childNodes[i]
         var isText = textNode.nodeType == Node.TEXT_NODE
 
-        if (isText && firstHalfStart) {
+        if (isText && selectInFirstHalf) {
           break;
         } else if (isText && !sawFirstHalf) {
           sawFirstHalf = true
