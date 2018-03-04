@@ -56,7 +56,6 @@ module.exports = library.export(
         "body",{
         "font-family": "sans-serif", //"Georgia, serif",
         "max-width": "30em",
-        "margin": "0 auto",
         // "background": "url(/lightpaperfibers.png)",
         "opacity": "0.8"})
 
