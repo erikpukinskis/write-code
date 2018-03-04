@@ -1,6 +1,6 @@
 {
   "name": "write-code",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "Programming for more people",
   "main": "write-code.js",
   "dependencies": {
