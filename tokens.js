@@ -151,7 +151,6 @@ module.exports = library.export(
     }
 
     function setOutroTokens(editable,tokens) {
-      // console.log("setting OUTRO tokens to "+JSON.stringify(tokens))
 
       var tokenCount = tokens.length
       var tokenIndex = tokens.length - 1

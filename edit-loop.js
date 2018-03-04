@@ -123,7 +123,6 @@ module.exports = library.export(
       var newContent = editor.getFirstHalf(lineNumber)
       textNode.textContent = newContent
       out.charsRemoved = originalLength - newContent.length
-      console.log(out)
 
       tokens.setSeparator(
         editable,
@@ -163,7 +162,6 @@ module.exports = library.export(
 
       if (textNode && textNode.textContent[0] == Editor.EMPTY && selectionStart == 0) {
         selectionStart = 1
-        console.log('ya')
       }
 
       range.setStart(textNode, selectionStart)
