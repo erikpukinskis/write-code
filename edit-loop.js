@@ -12,17 +12,16 @@ module.exports = library.export(
       if (event.key == "Enter") {
 
         editor.pressEnter(currentLine)
-
         syncLine(currentLine, editor)
 
         currentLine++
 
         var lineId = editor.lines.get(currentLine)
-
         syncLine(currentLine, editor)
-
         setSelection(lineId, 0)
         return
+
+
       }
 
       var lineId = editor.lines.get(currentLine)
@@ -36,6 +35,10 @@ module.exports = library.export(
         event.target.innerHTML = ""
       }
 
+      if (source.match(/\(a/)) {
+        debugger
+      }
+
       if (source == "\"\"") {
         editor.text(currentLine, "")
       } else {
@@ -44,11 +47,20 @@ module.exports = library.export(
 
       syncLine(currentLine, editor)
 
+      if (event.key == "(" && editor.role(currentLine) == "function literal opener") {
+
+        var lineId = editor.lines.get(currentLine)
+
+        setSelection(lineId, null, 0)
+        return
+      }
+
       var synced = currentLine
       var nextLineId = editor.lines.get(currentLine + 1)
 
       var lineId = editor.lines.get(currentLine)
       var text = editor.getFirstHalf(currentLine)
+
       setSelection(lineId, text.length)
 
       if (nextLineId) {
@@ -105,12 +117,21 @@ module.exports = library.export(
       tokens.setOutro(editable, outroTokens)
     }
 
-    function setSelection(lineId, selectionStart) {
+    function setSelection(lineId, firstHalfStart, secondHalfStart) {
       var editable = document.querySelector(".line-"+lineId)
+      var sawFirstHalf = false
+      var selectInFirstHalf = typeof firstHalfStart == "number"
 
       for(var i=0; i<editable.childNodes.length; i++) {
         var textNode = editable.childNodes[i]
-        if (textNode.nodeType == Node.TEXT_NODE) {
+        var isText = textNode.nodeType == Node.TEXT_NODE
+
+        if (isText && firstHalfStart) {
+          break;
+        } else if (isText && !sawFirstHalf) {
+          sawFirstHalf = true
+          textNode = undefined
+        } else if (isText) {
           break;
         } else {
           textNode = undefined
@@ -118,6 +139,13 @@ module.exports = library.export(
       }
 
       var range = document.createRange()
+      var selectionStart = selectInFirstHalf ? firstHalfStart : secondHalfStart
+
+      if (textNode && textNode.textContent[0] == Editor.EMPTY && selectionStart == 0) {
+        selectionStart = 1
+        console.log('ya')
+      }
+
       range.setStart(textNode, selectionStart)
 
       var selection = window.getSelection()

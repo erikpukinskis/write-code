@@ -81,7 +81,11 @@ module.exports = library.export(
       var outro = this.outros[openerId]
 
       if (!openerId) {
-        return "opener"
+        if (this.getSeparator(lineNumber) == "arguments-open") {
+          return "function literal opener"
+        } else {
+          return "opener"
+        }
       } else if (outro == "left-paren") {
         return "function call argument"
       } else {
