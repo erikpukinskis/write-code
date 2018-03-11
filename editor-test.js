@@ -1,7 +1,7 @@
 var runTest = require("run-test")(require)
 
-runTest.only(
-  "get some lines")
+// runTest.only(
+//   "get some lines")
 
 runTest(
   "get some lines",
@@ -45,6 +45,10 @@ runTest(
         expect(call).to.equal("anExpression.setAttribute")
         done.ish("updated attribute in log")
 
+      } else if (count == 4) {
+        expect(call).to.equal("anExpression.insertExpression")
+        done.ish("change line type in log")
+
         done()
       }
 
@@ -57,6 +61,7 @@ runTest(
 
     editor.text(0, "h")
     editor.text(0, "\"hi\"")
+    editor.text(0, "\"hi(\"")
   }
 )
 

@@ -220,8 +220,9 @@ module.exports = library.export(
       }
     }
 
-////
     Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
+
+      if (!this.tree) { return }
 
       if (!this.rootFunctionId) {
         var literal = anExpression.functionLiteral()
@@ -233,7 +234,17 @@ module.exports = library.export(
 
       var staleExpression = this.expressions.get(lineNumber)
 
-      if (staleExpression != null) {
+      if (staleExpression == null) {
+        expression.id = anExpression.id()
+        this.tree.addToParent(this.rootFunctionId, expression)
+        this.expressions.set(lineNumber, expression)
+
+      } else if (expression.kind != staleExpression.kind) {
+        expression.id = anExpression.id()
+        this.tree.insertExpression(expression, "inPlaceOf", staleExpression.id)
+        this.expressions.set(lineNumber, expression)
+
+      } else {
         var keys = ["string"]
 
         for(var i=0; i<keys.length; i++) {
@@ -241,14 +252,8 @@ module.exports = library.export(
 
           if (staleExpression[key] != expression[key]) {
             this.tree.setAttribute(key, staleExpression.id, expression[key])}
+            staleExpression[key] = expression[key]
         }
-
-      } else {
-        expression.id = anExpression.id()
-
-        this.tree.addToParent(this.rootFunctionId, expression)
-
-        this.expressions.set(lineNumber, expression)
       }
 
       doubleCheckIds(this, this.tree)
