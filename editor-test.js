@@ -13,14 +13,38 @@ runTest(
     var universe = aWildUniverseAppeared("lines", {anExpression: "an-expression"})
 
     var count = 0
+    var functionLiteralId
+
     universe.onStatement(function(call, args) {
 
       if (count == 0) {
         expect(call).to.equal("anExpression.tree")
+        done.ish("initialized tree in log")
 
       } else if (count == 1) {
         expect(call).to.equal("anExpression.addToTree")
-        // expect(args[1].kind).to.equal("function literal")
+        var index = args[1]
+        var attributes = args[2]
+        expect(attributes.kind).to.equal("function literal")
+        done.ish("function literal in log")
+        expect(index).to.equal(0)
+        done.ish("first expression indexed in log")
+        functionLiteralId = attributes.id
+        done.ish("initialized function literal in log")
+
+      } else if (count == 2) {
+        expect(call).to.equal("anExpression.addToParent")
+        var parentId = args[1]
+        var attributes = args[2]
+        expect(attributes.kind).to.equal("string literal")
+        done.ish("string literal in log")
+        expect(args[1]).to.equal(functionLiteralId)
+        done.ish("string added to function in log")
+
+      } else if (count == 3) {
+        expect(call).to.equal("anExpression.setAttribute")
+        done.ish("updated attribute in log")
+
         done()
       }
 
@@ -31,7 +55,8 @@ runTest(
 
     var editor = new Editor(tree)
 
-    editor.text(0, "hi")
+    editor.text(0, "h")
+    editor.text(0, "\"hi\"")
   }
 )
 

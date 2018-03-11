@@ -14,11 +14,7 @@ library.define(
         anExpression: "an-expression"})
 
       // universe.mute()
-      tree.logTo(universe)
-
-      tree.addExpressionAt(
-        tree.reservePosition(),
-        anExpression.functionLiteral())
+      tree.logTo(universe, true)
 
       universe.onStatement(save.bind(null, name))
 

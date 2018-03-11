@@ -15,7 +15,8 @@ module.exports = library.export(
       this.firstHalves = {}
       this.separators = {}
       this.secondHalves = {}
-      this.lines = forkableList([])
+      this.lineIds = forkableList([])
+      this.expressions = forkableList([])
     }
 
     var lastInteger = 1000*50
@@ -29,7 +30,7 @@ module.exports = library.export(
       if (typeof lineNumber != "number") {
         throw new Error("what line are we pressing Enter from?")
       }
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       var role = this.role(lineNumber)
 
       this.addLineAfter(lineNumber)
@@ -40,7 +41,7 @@ module.exports = library.export(
     }
 
     Editor.prototype.addLineAfter = function(lineNumber) {
-      var nextLineId = this.lines.get(lineNumber + 1)
+      var nextLineId = this.lineIds.get(lineNumber + 1)
       var nextLineIsEmpty = this.firstHalves[nextLineId] == Editor.EMPTY
 
       if (nextLineIsEmpty) {
@@ -48,9 +49,9 @@ module.exports = library.export(
       }
 
       var nextLineId = generateId()
-      this.lines.splice(lineNumber + 1, 0, nextLineId)
+      this.lineIds.splice(lineNumber + 1, 0, nextLineId)
       this.ensureSomethingAt(lineNumber + 1)
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       var linesClosed = this.linesClosedOn[lineId] 
       this.linesClosedOn[nextLineId] = linesClosed
       delete this.linesClosedOn[lineId]
@@ -63,14 +64,14 @@ module.exports = library.export(
       if (!closers) {
         return
       }
-      var lineNumbers = closers.map(editor.lines.find.bind(editor.lines))
+      var lineNumbers = closers.map(editor.lineIds.find.bind(editor.lineIds))
       var latest = Math.max.apply(null, lineNumbers)
       var index = lineNumbers.indexOf(latest)
       return closers[index]
     }
 
     Editor.prototype.role = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
 
       if (this.commas[lineId]) {
         throw new Error("probably an arg?")
@@ -219,6 +220,7 @@ module.exports = library.export(
       }
     }
 
+////
     Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
 
       if (!this.rootFunctionId) {
@@ -229,9 +231,42 @@ module.exports = library.export(
         this.rootFunctionId = literal.id
       }
 
-      expression.id = anExpression.id()
+      var staleExpression = this.expressions.get(lineNumber)
 
-      this.tree.addLine(this.rootFunctionId, lineNumber, expression)
+      if (staleExpression != null) {
+        var keys = ["string"]
+
+        for(var i=0; i<keys.length; i++) {
+          var key = keys[i]
+
+          if (staleExpression[key] != expression[key]) {
+            this.tree.setAttribute(key, staleExpression.id, expression[key])}
+        }
+
+      } else {
+        expression.id = anExpression.id()
+
+        this.tree.addToParent(this.rootFunctionId, expression)
+
+        this.expressions.set(lineNumber, expression)
+      }
+
+      doubleCheckIds(this, this.tree)
+    }
+
+    function doubleCheckIds(editor, tree) {
+      for(var index=0; index<editor.expressions.length; index++) {
+
+        var idFromEditor = editor.expressions.get(index).id
+
+        // The tree is indexed off by one, because it has the root expression in it, whereas editor could be indexed from any point in the tree. Right now it just contains a function literal wrapper tho, so its expressions will be at index + 1
+
+        var idFromTree = tree.expressionIds.get(index + 1)
+
+        if (idFromTree != idFromEditor) {
+          throw new Error("The editor has expression "+idFromEditor+" at line "+index+" but the tree has "+idFromTree+" at the associated index ("+(index + 1)+")")
+        }
+      }
     }
 
     Editor.prototype.text = function(lineNumber, text) {
@@ -308,10 +343,10 @@ module.exports = library.export(
     }
 
     Editor.prototype.ensureSomethingAt = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       if (!lineId) {
         lineId = generateId()
-        this.lines.set(lineNumber, lineId)
+        this.lineIds.set(lineNumber, lineId)
       }
       if (!this.firstHalves[lineId]) {
         this.firstHalves[lineId] = Editor.EMPTY
@@ -332,31 +367,31 @@ module.exports = library.export(
     }
 
     Editor.prototype.getFirstHalf = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       return this.firstHalves[lineId]
     }
 
     Editor.prototype.getSecondHalf = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       return this.secondHalves[lineId]
     }
 
     Editor.prototype.getIntroSymbol = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       var symbol = this.intros[lineId]
 
       return symbol
     } 
 
     Editor.prototype.getSeparator = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       var symbol = this.separators[lineId]
 
       return symbol
     } 
 
     Editor.prototype.getOutroSymbols = function(lineNumber) {
-      var lineId = this.lines.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
       var outro = this.outros[lineId]
       var comma = this.commas[lineId]
       var howToClose = this.howToClose

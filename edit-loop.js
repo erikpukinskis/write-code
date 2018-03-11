@@ -16,13 +16,13 @@ module.exports = library.export(
 
         currentLine++
 
-        var lineId = editor.lines.get(currentLine)
+        var lineId = editor.lineIds.get(currentLine)
         syncLine(currentLine, editor)
         setSelection(lineId, 0)
         return
       }
 
-      var lineId = editor.lines.get(currentLine)
+      var lineId = editor.lineIds.get(currentLine)
 
       var sourceNode = event.target.querySelector(".line-"+lineId)
 
@@ -48,15 +48,15 @@ module.exports = library.export(
 
       if (event.key == "(" && editor.role(currentLine) == "function literal opener") {
 
-        var lineId = editor.lines.get(currentLine)
+        var lineId = editor.lineIds.get(currentLine)
 
         setSelection(lineId, null, 0)
         return
       }
 
-      var nextLineId = editor.lines.get(currentLine + 1)
+      var nextLineId = editor.lineIds.get(currentLine + 1)
 
-      var lineId = editor.lines.get(currentLine)
+      var lineId = editor.lineIds.get(currentLine)
       var text = editor.getFirstHalf(currentLine)
 
       cursorPosition -= sync.charsRemoved
@@ -79,7 +79,7 @@ module.exports = library.export(
 
         currentLine++
 
-        var lineId = editor.lines.get(currentLine)
+        var lineId = editor.lineIds.get(currentLine)
 
         setSelection(lineId, 0)
       }
@@ -88,7 +88,7 @@ module.exports = library.export(
 
     function syncLine(lineNumber, editor) {
 
-      var lineId = editor.lines.get(lineNumber)
+      var lineId = editor.lineIds.get(lineNumber)
 
       var editable = document.querySelector(".line-"+lineId)
 
