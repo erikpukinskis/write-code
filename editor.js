@@ -2,8 +2,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "editor",
-  ["forkable-list"],
-  function(forkableList) {
+  ["forkable-list", "an-expression"],
+  function(forkableList, anExpression) {
 
     function Editor(tree) {
       this.tree = tree
@@ -219,8 +219,29 @@ module.exports = library.export(
       }
     }
 
+    Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
+
+      if (!this.rootFunctionId) {
+        var literal = anExpression.functionLiteral()
+        this.tree.addExpressionAt(
+          this.tree.reservePosition(),
+          literal)
+        this.rootFunctionId = literal.id
+      }
+
+      expression.id = anExpression.id()
+
+      this.tree.addLine(this.rootFunctionId, lineNumber, expression)
+    }
+
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
+
+      this.noticeExpressionAt(lineNumber, expression)
+
+      // OK, this seems like an OK place to sync the expression tree. Since we have the expression and all.
+
+      // The thing that we don't get from the expression, is the nesting. call(function() {}) is very different from call() function() {}
 
       var lineId = this.ensureSomethingAt(lineNumber)
 

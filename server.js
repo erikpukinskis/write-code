@@ -13,7 +13,7 @@ library.define(
         "expression-tree", {
         anExpression: "an-expression"})
 
-      universe.mute()
+      // universe.mute()
       tree.logTo(universe)
 
       tree.addExpressionAt(

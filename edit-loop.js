@@ -20,8 +20,6 @@ module.exports = library.export(
         syncLine(currentLine, editor)
         setSelection(lineId, 0)
         return
-
-
       }
 
       var lineId = editor.lines.get(currentLine)
@@ -38,10 +36,6 @@ module.exports = library.export(
       } else {
         var source = event.target.innerText
         event.target.innerHTML = ""
-      }
-
-      if (source.match(/\(a/)) {
-        debugger
       }
 
       if (source == "\"\"") {

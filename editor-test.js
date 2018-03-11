@@ -1,5 +1,51 @@
 var runTest = require("run-test")(require)
 
+runTest.only(
+  "get some lines")
+
+runTest(
+  "get some lines",
+  ["./editor", "an-expression", "a-wild-universe-appeared"],
+  function(expect, done, Editor, anExpression, aWildUniverseAppeared) {
+
+    var tree = anExpression.tree()
+
+    var universe = aWildUniverseAppeared("lines", {anExpression: "an-expression"})
+
+    var count = 0
+    universe.onStatement(function(call, args) {
+
+      if (count == 0) {
+        expect(call).to.equal("anExpression.tree")
+
+      } else if (count == 1) {
+        expect(call).to.equal("anExpression.addToTree")
+        // expect(args[1].kind).to.equal("function literal")
+        done()
+      }
+
+      count++
+    })
+
+    tree.logTo(universe, true)
+
+    var editor = new Editor(tree)
+
+    editor.text(0, "hi")
+  }
+)
+
+
+runTest(
+  "quotes parse",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("\"browser-bridge\"")
+    expect(segments.outro).to.equal("\"")
+    done()
+  }
+)
 
 
 runTest(

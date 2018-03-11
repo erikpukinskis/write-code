@@ -4,11 +4,11 @@
   "description": "Programming for more people",
   "main": "write-code.js",
   "dependencies": {
-    "module-library": "*",
     "add-html": "^0.25.0",
-    "an-expression": "*",
+    "an-expression": "^0.52.0",
     "bridge-module": "*",
-    "forkable-list": "*"
+    "forkable-list": "*",
+    "module-library": "*"
   },
   "devDependencies": {
     "run-test": "*",
