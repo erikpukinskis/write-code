@@ -299,21 +299,11 @@ module.exports = library.export(
 
       this.noticeExpressionAt(lineNumber, expression)
 
-      // OK, this seems like an OK place to sync the expression tree. Since we have the expression and all.
-
-      // The thing that we don't get from the expression, is the nesting. call(function() {}) is very different from call() function() {}
-
       var lineId = this.lineIds.get(lineNumber)
 
       if (!lineId) {
         throw new Error("no id")
       }
-
-      // mmm. the ok place to sync the expression tree is a place where I want to know who my parent is.
-
-      // but why am I preemptively adding an expression id here?
-
-      // I guess it's because we are about to make text here, and if there's not already an expression there will be. But how can I know what the parent is?
 
       var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
 
