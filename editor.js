@@ -48,6 +48,7 @@ module.exports = library.export(
       }
 
       var nextLineId = generateId()
+
       this.lineIds.splice(lineNumber + 1, 0, nextLineId)
       this.parents[nextLineId] = parentId
       this.ensureSomethingAt(lineNumber + 1, parentId)
@@ -168,7 +169,7 @@ module.exports = library.export(
       var emptyMatch = text.match(/^[\s\u200b]*"?[\s\u200b]*$/)
 
       if (emptyMatch) {
-        return
+        return anExpression.emptyExpression()
       }
 
       var segments = this.parse(text)
@@ -222,20 +223,33 @@ module.exports = library.export(
 
     Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
 
-      if (!this.tree) { return }
 
       if (!this.rootFunctionId) {
-        var literal = anExpression.functionLiteral()
-        this.tree.addExpressionAt(
-          this.tree.reservePosition(),
-          literal)
-        this.rootFunctionId = literal.id
+
+        if (this.tree) {
+          var literal = anExpression.functionLiteral()
+          this.tree.addExpressionAt(
+            this.tree.reservePosition(),
+            literal)
+          this.rootFunctionId = literal.id
+        } else {
+          this.rootFunctionId = anExpression.id()
+        }
+
+        var emptyId = this.ensureSomethingAt(0, this.rootFunctionId)
+        this.parents[emptyId] = this.rootFunctionId
       }
 
       var lineId = this.lineIds.get(lineNumber)
+
       expression.id = lineId
+
       if (!lineId) {
         throw new Error("trying to add an expression for a line without an id")
+      }
+
+      if (!this.tree) {
+        return
       }
 
       var staleExpression = this.expressions[lineId]
@@ -289,7 +303,17 @@ module.exports = library.export(
 
       // The thing that we don't get from the expression, is the nesting. call(function() {}) is very different from call() function() {}
 
-      var lineId = this.ensureSomethingAt(lineNumber, parentId)
+      var lineId = this.lineIds.get(lineNumber)
+
+      if (!lineId) {
+        throw new Error("no id")
+      }
+
+      // mmm. the ok place to sync the expression tree is a place where I want to know who my parent is.
+
+      // but why am I preemptively adding an expression id here?
+
+      // I guess it's because we are about to make text here, and if there's not already an expression there will be. But how can I know what the parent is?
 
       var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
 
@@ -313,7 +337,7 @@ module.exports = library.export(
           this.secondHalves[lineId] = Editor.EMPTY
         }
 
-        var nextLineId = this.addLineAfter(lineNumber, parentId)
+        var nextLineId = this.addLineAfter(lineNumber, lineId)
 
         delete this.linesClosedOn[lineId]
         this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
@@ -333,12 +357,12 @@ module.exports = library.export(
         this.howToClose[lineId] = "right-paren"
 
         if (linesPreviouslyClosedHere) {
-          var nextLineId = this.addLineAfter(lineNumber, parentId)
+          var nextLineId = this.addLineAfter(lineNumber, lineId)
           delete this.linesClosedOn[lineId]
           this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
 
         } else {
-          var nextLineId = this.ensureSomethingAt(lineNumber + 1, parentId)
+          var nextLineId = this.ensureSomethingAt(lineNumber + 1, lineId)
         }
 
         ensureContains(this.linesClosedOn, nextLineId, lineId)

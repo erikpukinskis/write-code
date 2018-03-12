@@ -30,6 +30,9 @@ library.define(
 
       var path = "/universes/expression-trees/"+moduleIdentifier
 
+      if (tree.expressionIds.length > 1) {
+        console.log("source is ", tree.toJavaScript())
+      }
       makeRequest({
         method: "post",
         path: path,

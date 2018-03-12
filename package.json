@@ -5,7 +5,7 @@
   "main": "write-code.js",
   "dependencies": {
     "add-html": "^0.25.0",
-    "an-expression": "^0.52.0",
+    "an-expression": "^0.53.0",
     "bridge-module": "*",
     "forkable-list": "*",
     "module-library": "*"

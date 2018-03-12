@@ -1,7 +1,7 @@
 var runTest = require("run-test")(require)
 
 // runTest.only(
-//   "get some lines")
+//   "updating from source")
 
 runTest(
   "get some lines",
@@ -11,6 +11,7 @@ runTest(
     var tree = anExpression.tree()
 
     var universe = aWildUniverseAppeared("lines", {anExpression: "an-expression"})
+    universe.mute()
 
     var count = 0
     var functionLiteralId
@@ -161,6 +162,7 @@ runTest(
   function(expect, done, Editor) {
 
     var editor = new Editor()
+
     editor.text = function(line, text) {
       Editor.prototype.text.call(editor, line, text)
       Editor.prototype.text.call(editor, line, text)
@@ -205,6 +207,9 @@ runTest(
     // done.ish("can use commas in quotes")
 
     editor.text(0, "")
+    var lineId = editor.lineIds.get(0)
+    expect(editor.parents[lineId]).to.exist
+    done.ish("empty expression gets parented")
     expectSymbols(0, undefined, undefined, [])
     expectText(0, Editor.EMPTY)
     done.ish("empty text is empty")
@@ -309,7 +314,6 @@ runTest(
     done.ish("functions have names")
     // expectCursor(2, 1)
 
-    debugger
     editor.text(2, "function s(boofer, doofer){")
     expectSymbols(2, "function", "arguments-open", ["arguments-close", "curly-open"])
     expectText(2, " s", "boofer, doofer")
