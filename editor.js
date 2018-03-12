@@ -16,14 +16,13 @@ module.exports = library.export(
       this.separators = {}
       this.secondHalves = {}
       this.lineIds = forkableList([])
-      this.expressions = forkableList([])
+      this.parents = {}
+      this.expressions = {}
     }
 
     var lastInteger = 1000*50
     function generateId() {
-      lastInteger++
-      var id = lastInteger.toString(36)
-      return "ln-"+id
+      return anExpression.id()
     }
 
     Editor.prototype.pressEnter = function(lineNumber) {
@@ -33,14 +32,14 @@ module.exports = library.export(
       var lineId = this.lineIds.get(lineNumber)
       var role = this.role(lineNumber)
 
-      this.addLineAfter(lineNumber)
+      this.addLineAfter(lineNumber, lineId)
 
       if (role == "function call argument") {
         this.commas[lineId] = true
       }
     }
 
-    Editor.prototype.addLineAfter = function(lineNumber) {
+    Editor.prototype.addLineAfter = function(lineNumber, parentId) {
       var nextLineId = this.lineIds.get(lineNumber + 1)
       var nextLineIsEmpty = this.firstHalves[nextLineId] == Editor.EMPTY
 
@@ -50,7 +49,8 @@ module.exports = library.export(
 
       var nextLineId = generateId()
       this.lineIds.splice(lineNumber + 1, 0, nextLineId)
-      this.ensureSomethingAt(lineNumber + 1)
+      this.parents[nextLineId] = parentId
+      this.ensureSomethingAt(lineNumber + 1, parentId)
       var lineId = this.lineIds.get(lineNumber)
       var linesClosed = this.linesClosedOn[lineId] 
       this.linesClosedOn[nextLineId] = linesClosed
@@ -232,17 +232,23 @@ module.exports = library.export(
         this.rootFunctionId = literal.id
       }
 
-      var staleExpression = this.expressions.get(lineNumber)
+      var lineId = this.lineIds.get(lineNumber)
+      expression.id = lineId
+      if (!lineId) {
+        throw new Error("trying to add an expression for a line without an id")
+      }
+
+      var staleExpression = this.expressions[lineId]
 
       if (staleExpression == null) {
-        expression.id = anExpression.id()
-        this.tree.addToParent(this.rootFunctionId, expression)
-        this.expressions.set(lineNumber, expression)
+        var parentId = this.parents[lineId] || this.rootFunctionId
+
+        this.tree.addToParent(parentId, expression)
+        this.expressions[lineId] = expression
 
       } else if (expression.kind != staleExpression.kind) {
-        expression.id = anExpression.id()
         this.tree.insertExpression(expression, "inPlaceOf", staleExpression.id)
-        this.expressions.set(lineNumber, expression)
+        this.expressions[lineId] = expression
 
       } else {
         var keys = ["string"]
@@ -283,7 +289,7 @@ module.exports = library.export(
 
       // The thing that we don't get from the expression, is the nesting. call(function() {}) is very different from call() function() {}
 
-      var lineId = this.ensureSomethingAt(lineNumber)
+      var lineId = this.ensureSomethingAt(lineNumber, parentId)
 
       var linesPreviouslyClosedHere = this.linesClosedOn[lineId]
 
@@ -307,7 +313,7 @@ module.exports = library.export(
           this.secondHalves[lineId] = Editor.EMPTY
         }
 
-        var nextLineId = this.addLineAfter(lineNumber)
+        var nextLineId = this.addLineAfter(lineNumber, parentId)
 
         delete this.linesClosedOn[lineId]
         this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
@@ -327,12 +333,12 @@ module.exports = library.export(
         this.howToClose[lineId] = "right-paren"
 
         if (linesPreviouslyClosedHere) {
-          var nextLineId = this.addLineAfter(lineNumber)
+          var nextLineId = this.addLineAfter(lineNumber, parentId)
           delete this.linesClosedOn[lineId]
           this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
 
         } else {
-          var nextLineId = this.ensureSomethingAt(lineNumber + 1)
+          var nextLineId = this.ensureSomethingAt(lineNumber + 1, parentId)
         }
 
         ensureContains(this.linesClosedOn, nextLineId, lineId)
@@ -347,11 +353,12 @@ module.exports = library.export(
       }
     }
 
-    Editor.prototype.ensureSomethingAt = function(lineNumber) {
+    Editor.prototype.ensureSomethingAt = function(lineNumber, parentId) {
       var lineId = this.lineIds.get(lineNumber)
       if (!lineId) {
         lineId = generateId()
         this.lineIds.set(lineNumber, lineId)
+        this.parents[lineId] = parentId
       }
       if (!this.firstHalves[lineId]) {
         this.firstHalves[lineId] = Editor.EMPTY

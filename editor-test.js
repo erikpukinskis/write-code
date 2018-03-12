@@ -14,6 +14,7 @@ runTest(
 
     var count = 0
     var functionLiteralId
+    var callId
 
     universe.onStatement(function(call, args) {
 
@@ -47,8 +48,15 @@ runTest(
 
       } else if (count == 4) {
         expect(call).to.equal("anExpression.insertExpression")
+        var attributes = args[1]
+        callId = attributes.id
         done.ish("change line type in log")
 
+      } else if (count == 5) {
+        expect(call).to.equal("anExpression.addToParent")
+        var parentId = args[1]
+        var attributes = args[2]
+        expect(parentId).to.equal(callId)
         done()
       }
 
@@ -62,6 +70,7 @@ runTest(
     editor.text(0, "h")
     editor.text(0, "\"hi\"")
     editor.text(0, "\"hi(\"")
+    editor.text(1, "foo")
   }
 )
 
