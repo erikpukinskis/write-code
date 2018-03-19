@@ -66,182 +66,108 @@ library.using(
         "margin-bottom": "0.3em",
       }),
 
-      element.style(".layer0", {
-        "transform": "translate(0, 0)",
-        /*" z-index": "500 */
-      }),
-
-      element.style(".layer1", {
-        "transform": "translate(30px, 2px)",
-        /*" z-index": "400", */
-      }),
-
-      element.style(".layer2", {
-        "transform": "translate(60px, 4px)",
-        /*" z-index": "300", */
-      }),
-
-      element.style(".layer3", {
-        "transform": "translate(90px, 6px)",
-        /*" z-index": "200", */
-      }),
-
-      element.style(".layer4", {
-        "transform": "translate(120px, 8px)",
-        /*" z-index": "100", */
-      }),
-
-      element.style(".down-layer, .layer", {
+      element.style(".up-layer, .layer", {
         "position": "relative",
-      }),
-
-      element.style(".layer3-down", {
-        "top": "5px",
-      }),
-
-      element.style(".layer2-down", {
-        "top": "10px",
-      }),
-
-      element.style(".layer1-down", {
-        "top": "15px",
-      }),
-
-      element.style(".layer0-down", {
-        "top": "20px",
-      }),
-
-      element.style(".layer0, .layer0-down", {
-        "font-size": "1.2em",
-      }),
-
-      element.style(".layer1, .layer1-down", {
-        "font-size": "1.15em",
-      }),
-
-      element.style(".layer2, .layer2-down", {
-        "font-size": "1.1em",
-      }),
-
-      element.style(".layer3, .layer3-down", {
-        "font-size": "1.05em",
-      }),
-
-      element.style(".layer0, .layer0-down", {
-        "text-shadow": "-0.2em 0.8em 0.05em rgba(0,0,0,0.02)"
-      }),
-      element.style(".layer0 .symbol", {
-        "text-shadow": "none",
-        "box-shadow": "-0.2em 0.8em 0.05em rgba(0,50,100, 0.01)",
-      }),
-
-      element.style(".layer1, .layer1-down", {
-        "text-shadow": "-0.15em 0.6em 0.04em rgba(0,0,0,0.04)"
-      }),
-      element.style(".layer1 .symbol", {
-        "text-shadow": "none",
-        "box-shadow": "-0.15em 0.6em 0.04em rgba(0,50,100, 0.01)",
-      }),
-
-      element.style(".layer2, .layer2-down", {
-        "text-shadow": "-0.1em 0.4em 0.04em rgba(0,0,0,0.04)"
-      }),
-
-      element.style(".layer2 .symbol", {
-        "text-shadow": "none",
-        "box-shadow": "-0.1em 0.4em 0.04em rgba(0,50,100, 0.01)",
-      }),
-
-      element.style(".layer3, .layer3-down", {
-        "text-shadow": "-0.05em 0.2em 0.02em rgba(0,0,0,0.04)"
-      }),
-
-      element.style(".layer3 .symbol", {
-        "text-shadow": "none",
-        "box-shadow": "-0.05em 0.2em 0.02em rgba(0,50,255, 0.01)",
-      }),
-
-      element.style(".layer0 .text", {
-         "color": "rgba(0,0,0,0.8)",
-      }),
-      element.style(".layer1 .text", { 
-        "color": "rgba(0,0,0,0.7)",
-      }),
-      element.style(".layer2 .text", { 
-        "color": "rgba(0,0,0,0.6)",
-      }),
-      element.style(".layer3 .text", { 
-        "color": "rgba(0,0,0,0.5)",
-      }),
-      element.style(".layer4 .text", { 
-        "color": "rgba(0,0,0,0.4)",
-      }),
-
-      element.style(".layer0 .text.empty", { 
-        "background-color": "rgba(0,0,0,0.24)",
-      }),
-      element.style(".layer1 .text.empty", { 
-        "background-color": "rgba(0,0,0,0.21)",
-      }),
-      element.style(".layer2 .text.empty", { 
-        "background-color": "rgba(0,0,0,0.18)",
-      }),
-
-      element.style(".layer3 .text.empty", {
-        "background-color": "rgba(0,0,0,0.15)",
-      }),
-
-      element.style(".layer4 .text.empty", { 
-        "background-color": "rgba(0,0,0,0.12)",
-      }),
-
-      element.style(".layer0 .symbol", {
-        "color": "rgba(100,110,140, 1)",
-      }),
-      element.style(".layer1 .symbol", {
-        "color": "rgba(100,110,140, 0.9)",
-      }),
-      element.style(".layer2 .symbol", {
-        "color": "rgba(100,110,140, 0.8)",
-      }),
-      element.style(".layer3 .symbol", {
-        "color": "rgba(100,110,140, 0.7)",
-      }),
-      element.style(".layer4 .symbol", {
-        "color": "rgba(100,110,140, 0.6)",
-      }),
-
-      element.style(".layer0-down .symbol", {
-        "color": "rgba(100,110,140,1) !important",
-      }),
-      element.style(".layer1-down .symbol", {
-        "color": "rgba(100,110,140,0.9) !important",
-      }),
-      element.style(".layer2-down .symbol", {
-        "color": "rgba(100,110,140,0.8) !important",
-      }),
-      element.style(".layer3-down .symbol", {
-        "color": "rgba(100,110,140,0.7) !important",
-      }),
-      element.style(".layer4-down .symbol", {
-        "color": "rgba(100,110,140,0.6) !important",
-      }),
-
-      element.style(".layer3.layer3-1", {
-        "z-index": "199",
-      }),
-
-      element.style(".layer3.layer4-1", { 
-        "z-index": "99",
       }),
 
     ])
 
-    var site = new WebSite()
-    site.start(1413)
-
+    var levels = [0,1,2,3,4,5]
+    var maxDepth = levels.length+1
     var baseBridge = new BrowserBridge()
     baseBridge.addToHead(stylesheet)
+
+    function levelStyles(generator) {
+      var styles = []
+
+      levels.forEach(function(depth) {
+        var height = maxDepth - depth
+        var out = generator(depth, height)
+        if (Array.isArray(out)) {
+          styles = styles.concat(out)
+        } else {
+          styles.push(out)
+        }
+      })
+
+      baseBridge.addToHead(
+        element.stylesheet(styles))
+    }
+
+    levelStyles(function(depth) {
+      var x = depth * 30
+      var y = depth * 2
+      return element.style(".layer"+depth, {
+        "transform": "translate("+x+"px, "+y+"px)",
+      })
+    })
+
+    levelStyles(function(height) {
+      var top = height * 5
+
+      return element.style(".layer"+height+"-up", {
+        "top": top+"px",
+      })
+    })
+
+    levelStyles(function(depth, height) {
+      var fontSize = f(1 + height * 0.05)
+
+      return element.style(".layer"+depth+", .layer"+height+"-up", {
+        "font-size": fontSize+"em",
+      })
+    })
+
+    function f(x) {
+      return x.toFixed(2)
+    }
+
+    levelStyles(function(depth, height) {
+      var left = f(-0.05 * height)
+      var top = f(0.2 * height)
+      var fuzz = f(0.01 * height)
+
+      return [
+        element.style(".layer"+depth+", .layer"+depth+"-up", {
+          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.04)"
+        }),
+        element.style(".layer"+depth+" .symbol", {
+          "text-shadow": "none",
+          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
+        }),
+      ]
+    })
+
+    levelStyles(function(depth, height) {
+      height = Math.max(height, 4)
+      var opacity = f(0.4 + height * 0.1)
+      return element.style(".layer"+depth+" .text", {
+         "color": "rgba(0,0,0,0.8)",
+      })
+    })
+
+    levelStyles(function(depth, height) {
+      var opacity = f(0.12 + 0.03 * depth)
+      return element.style(".layer"+depth+" .text.empty", { 
+        "background-color": "rgba(0,0,0,"+opacity+")",
+      })
+    })
+
+    levelStyles(function(depth, height) {
+      var opacity = f(0.6 + height * 0.1)
+      return [
+        element.style(".layer"+depth+" .symbol", {
+          "color": "rgba(100,110,140, 1)",
+        }),
+        element.style(".layer"+depth+"-down .symbol", {
+          "color": "rgba(100,110,140, 1) !important",
+        }),
+      ]        
+    })
+
+
+    var site = new WebSite()
+    site.start(1413)
 
     site.addRoute("get", "/", function(request, response) {
       var bridge = baseBridge.forResponse(response)
@@ -343,7 +269,7 @@ library.using(
           closers = []
         }
 
-        var closerDepth = depth;
+        var closerHeight = 0;
 
         closers.forEach(function(closer) {
           var isOneLevelUp = closer == "right-paren" || closer == "curly-close"
@@ -354,10 +280,10 @@ library.using(
             return
           }
 
-          closerDepth--
+          closerHeight++
 
           var downLayer = element(
-            "span.down-layer.layer"+closerDepth+"-down",
+            "span.up-layer.layer"+closerHeight+"-up",
             symbolEl(closer))
 
           line.addChild(
@@ -374,7 +300,7 @@ library.using(
       addLine(3, "quote-open", "thing", null, null, ["quote-close", "comma"])
       addLine(3, "function", "after", "arguments-open", empty, ["arguments-close", "curly-open"])
       addLine(4, "return", "call2", null, null, ["left-paren"])
-      addLine(5, null, empty, null, null, ["right-paren", "curly-close", "right-paren", "curly-close", "right-paren"])
+      addLine(5, null, empty, null, null, ["arguments-close", "curly-close", "right-paren", "curly-close", "right-paren"])
 
       body.push(logo)
 
