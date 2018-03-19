@@ -1,8 +1,9 @@
 var library = require("module-library")(require)
 
-library.using(
-  ["web-element", "web-site", "browser-bridge", "fs"],
-  function(element, WebSite, BrowserBridge, fs) {  
+module.exports = library.export(
+  "render-javascript",
+  ["web-element", "browser-bridge"],
+  function(element, BrowserBridge) {
 
     var stylesheet = element.stylesheet([
       element.style("body", {
@@ -74,8 +75,7 @@ library.using(
 
     var levels = [0,1,2,3,4,5]
     var maxDepth = levels.length - 1
-    var baseBridge = new BrowserBridge()
-    baseBridge.addToHead(stylesheet)
+    var stylesheets = [stylesheet]
 
     function levelStyles(generator) {
       var styles = []
@@ -90,7 +90,7 @@ library.using(
         }
       })
 
-      baseBridge.addToHead(
+      stylesheets.push(
         element.stylesheet(styles))
     }
 
@@ -129,10 +129,10 @@ library.using(
 
       return [
         element.style(".layer"+depth, {
-          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.02)"
+          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.04)"
         }),
         element.style(".layer"+depth+"-up .symbol", {
-          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.02)"
+          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.04)"
         }),        
         element.style(".layer"+depth+" .symbol", {
           "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
@@ -170,79 +170,77 @@ library.using(
       })
     })
 
-    var site = new WebSite()
-    site.start(1413)
+    function symbolEl(symbol) {
+      var symbols = {
+        "quote-open": "\"",
+        "quote-close": "\"",
+        "comma": ",",
+        "left-paren": "(",
+        "right-paren": ")", 
+        "arguments-open": "(",
+        "arguments-close": ")", 
+        "curly-open": "{",
+        "curly-close": "}",
+        "left-brace": "[",
+        "right-brace": "]",
+      }
 
-    site.addRoute("get", "/", function(request, response) {
-      var bridge = baseBridge.forResponse(response)
+      var textSymbols = {
+        "function": "function",
+        "var": "var",
+        "return": "return",
+      }
 
-      var empty = {}
+      var content = symbols[symbol] || textSymbols[symbol]
 
-      var logo = element(
-        ".layer.layer0",
-        element.style({
-          "margin-top": "4em",
-          "float": "right"}),
-        element(
-          "span.text-symbol.symbol.logo",
-          "ezjs"))
+      if (!content) {
+        throw new Error("no symbol "+symbol)
+      }
+      var el = element(".symbol", content)
+
+      if (textSymbols[symbol]) {
+        el.addSelector(".text-symbol")
+      }
+
+      if (symbol == "quote-open") {
+        el.addSelector(".opening-symbol")
+      }
+
+      if (symbol == "quote-close") {
+        el.addSelector(".closing-symbol")
+      }
+
+      return el
+    }
+
+    function textEl(text) {
+      if (text == empty) {
+        return element(
+          "span.text.empty",
+          "&#x200b;")
+      } else {
+        return element(
+          ".text",
+          text)
+      }
+    }
+
+    var logo = element(
+      ".layer.layer0",
+      element.style({
+        "margin-top": "4em",
+        "float": "right"}),
+      element(
+        "span.text-symbol.symbol.logo",
+        "ezjs"))
+
+    renderJavascript.prepareBridge = function(bridge) {
+      stylesheets.forEach(bridge.addToHead.bind(bridge))
+    }
+
+    function renderJavascript(bridge, programBuilder) {
 
       var body = []
-
-      function symbolEl(symbol) {
-        var symbols = {
-          "quote-open": "\"",
-          "quote-close": "\"",
-          "comma": ",",
-          "left-paren": "(",
-          "right-paren": ")", 
-          "arguments-open": "(",
-          "arguments-close": ")", 
-          "curly-open": "{",
-          "curly-close": "}",
-          "left-brace": "[",
-          "right-brace": "]",
-        }
-
-        var textSymbols = {
-          "function": "function",
-          "var": "var",
-          "return": "return",
-        }
-
-        var content = symbols[symbol] || textSymbols[symbol]
-
-        if (!content) {
-          throw new Error("no symbol "+symbol)
-        }
-        var el = element(".symbol", content)
-
-        if (textSymbols[symbol]) {
-          el.addSelector(".text-symbol")
-        }
-
-        if (symbol == "quote-open") {
-          el.addSelector(".opening-symbol")
-        }
-
-        if (symbol == "quote-close") {
-          el.addSelector(".closing-symbol")
-        }
-
-        return el
-      }
-
-      function textEl(text) {
-        if (text == empty) {
-          return element(
-            "span.text.empty",
-            "&#x200b;")
-        } else {
-          return element(
-            ".text",
-            text)
-        }
-      }
 
       function addLine(depth, opener, firstHalf, separator, secondHalf, closers) {
 
@@ -294,22 +292,18 @@ library.using(
             downLayer)
         })
 
-
         body.push(line)
       }
 
-      addLine(0, null, "module", null, null, ["left-paren"])
-      addLine(1, "function", empty, "arguments-open", empty, ["arguments-close", "curly-open"])
-      addLine(2, "return", "call", null, null, ["left-paren"])
-      addLine(3, "quote-open", "thing", null, null, ["quote-close", "comma"])
-      addLine(3, "function", "after", "arguments-open", empty, ["arguments-close", "curly-open"])
-      addLine(4, "return", "call2", null, null, ["left-paren"])
-      addLine(5, null, empty, null, null, ["arguments-close", "curly-close", "right-paren", "curly-close", "right-paren"])
+      programBuilder(addLine)
 
       body.push(logo)
 
       bridge.send(body)
-    })
+    }
 
+    var empty = renderJavascript.empty = {}
+
+    return renderJavascript
   }
 )
