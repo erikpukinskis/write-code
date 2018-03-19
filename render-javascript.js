@@ -73,7 +73,7 @@ library.using(
     ])
 
     var levels = [0,1,2,3,4,5]
-    var maxDepth = levels.length+1
+    var maxDepth = levels.length - 1
     var baseBridge = new BrowserBridge()
     baseBridge.addToHead(stylesheet)
 
@@ -102,10 +102,10 @@ library.using(
       })
     })
 
-    levelStyles(function(height) {
-      var top = height * 5
+    levelStyles(function(depth, height) {
+      var top = (height - 1) * 5
 
-      return element.style(".layer"+height+"-up", {
+      return element.style(".layer"+depth+"-up", {
         "top": top+"px",
       })
     })
@@ -113,7 +113,7 @@ library.using(
     levelStyles(function(depth, height) {
       var fontSize = f(1 + height * 0.05)
 
-      return element.style(".layer"+depth+", .layer"+height+"-up", {
+      return element.style(".layer"+depth+", .layer"+depth+"-up", {
         "font-size": fontSize+"em",
       })
     })
@@ -124,14 +124,20 @@ library.using(
 
     levelStyles(function(depth, height) {
       var left = f(-0.05 * height)
-      var top = f(0.2 * height)
+      var top = f(0.15 * height)
       var fuzz = f(0.01 * height)
 
       return [
-        element.style(".layer"+depth+", .layer"+depth+"-up", {
-          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.04)"
+        element.style(".layer"+depth, {
+          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.02)"
         }),
+        element.style(".layer"+depth+"-up .symbol", {
+          "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.02)"
+        }),        
         element.style(".layer"+depth+" .symbol", {
+          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
+        }),
+        element.style(".layer"+depth+" .text-symbol", {
           "text-shadow": "none",
           "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
         }),
@@ -139,11 +145,22 @@ library.using(
     })
 
     levelStyles(function(depth, height) {
-      height = Math.max(height, 4)
       var opacity = f(0.4 + height * 0.1)
       return element.style(".layer"+depth+" .text", {
-         "color": "rgba(0,0,0,0.8)",
+         "color": "rgba(0,0,0,"+opacity+")",
       })
+    })
+
+    levelStyles(function(depth, height) {
+      var opacity = f(0.6 + height * 0.1)
+      return [
+        element.style(".layer"+depth+" .symbol", {
+          "color": "rgba(100,110,140, "+opacity+")",
+        }),
+        element.style(".layer"+depth+"-up .symbol", {
+          "color": "rgba(100,110,140, "+opacity+") !important",
+        }),
+      ]        
     })
 
     levelStyles(function(depth, height) {
@@ -152,19 +169,6 @@ library.using(
         "background-color": "rgba(0,0,0,"+opacity+")",
       })
     })
-
-    levelStyles(function(depth, height) {
-      var opacity = f(0.6 + height * 0.1)
-      return [
-        element.style(".layer"+depth+" .symbol", {
-          "color": "rgba(100,110,140, 1)",
-        }),
-        element.style(".layer"+depth+"-down .symbol", {
-          "color": "rgba(100,110,140, 1) !important",
-        }),
-      ]        
-    })
-
 
     var site = new WebSite()
     site.start(1413)
@@ -269,10 +273,12 @@ library.using(
           closers = []
         }
 
-        var closerHeight = 0;
+        var closerDepth = depth;
 
         closers.forEach(function(closer) {
           var isOneLevelUp = closer == "right-paren" || closer == "curly-close"
+
+          closerDepth--
 
           if (!isOneLevelUp) {
             line.addChild(
@@ -280,10 +286,8 @@ library.using(
             return
           }
 
-          closerHeight++
-
           var downLayer = element(
-            "span.up-layer.layer"+closerHeight+"-up",
+            "span.up-layer.layer"+closerDepth+"-up",
             symbolEl(closer))
 
           line.addChild(
