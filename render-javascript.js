@@ -1,6 +1,6 @@
-var library = require("module-library")(require)
+var library = require("module-library")(module)
 
-module.exports = library.export(
+library(
   "render-javascript",
   ["web-element", "browser-bridge"],
   function(element, BrowserBridge) {
@@ -135,11 +135,11 @@ module.exports = library.export(
           "text-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0,0.04)"
         }),        
         element.style(".layer"+depth+" .symbol", {
-          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
+          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0, 0.1)",
         }),
         element.style(".layer"+depth+" .text-symbol", {
           "text-shadow": "none",
-          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,50,100, 0.01)",
+          "box-shadow": left+"em "+top+"em "+fuzz+"em rgba(0,0,0, 0,1)",
         }),
       ]
     })
@@ -225,15 +225,6 @@ module.exports = library.export(
       }
     }
 
-    var logo = element(
-      ".layer.layer0",
-      element.style({
-        "margin-top": "4em",
-        "float": "right"}),
-      element(
-        "span.text-symbol.symbol.logo",
-        "ezjs"))
-
     renderJavascript.prepareBridge = function(bridge) {
       stylesheets.forEach(bridge.addToHead.bind(bridge))
     }
@@ -296,8 +287,6 @@ module.exports = library.export(
       }
 
       programBuilder(addLine)
-
-      body.push(logo)
 
       bridge.send(body)
     }
