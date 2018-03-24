@@ -100,6 +100,20 @@ runTest(
 )
 
 runTest(
+  "variable assignment parses",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("var foo = bar\"")
+    expect(segments.intro).to.equal("var ")
+    expect(segments.identifierIsh).to.equal("foo")
+    expect(segments.separator).to.equal("=")
+    expect(segments.notIdentifier).to.equal("bar")
+    done()
+  }
+)
+
+runTest(
   "function literal symbol parses",
   ["./editor"],
   function(expect, done, Editor) {

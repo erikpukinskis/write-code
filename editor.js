@@ -141,11 +141,17 @@ module.exports = library.export(
 
         var identiferMatch = middle.match(/^\s*([\.\w]+)\s*$/)
 
+        var separatedMatch = middle.match(/^(\w+)\s*([=:])\s*(\w+)$/)
+
         if (functionLiteralMatch) {
           var identifierIsh = functionLiteralMatch[1]
           var argumentSignature = functionLiteralMatch[2]
         } else if (identiferMatch) {
           var identifierIsh = identiferMatch[1]
+        } else if (separatedMatch) {
+          var identifierIsh = separatedMatch[1]
+          var separator = separatedMatch[2]
+          var notIdentifier = separatedMatch[3]
         } else {
           var notIdentifier = middle
         }
@@ -156,9 +162,16 @@ module.exports = library.export(
         intro: intro,
         outro: outro,
         middle: middle,
+        separator: separator,
         identifierIsh: identifierIsh,
         notIdentifier: notIdentifier,
         argumentSignature: argumentSignature,
+      }
+
+      var expectIdentifier = segments.intro && segments.intro.trim() == "var"
+
+      if (expectIdentifier && segments.notIdentifier && !separator) {
+        throw new Error("\nthere's probably an identifier in here: "+segments.notIdentifier)
       }
 
       return segments
