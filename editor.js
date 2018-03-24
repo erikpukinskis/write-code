@@ -147,7 +147,6 @@ module.exports = library.export(
 
         var stringCloseMatch = !callMatch && intro == "\"" && middle.match(/^(.*)"(.*)$/)
 
-        debugger
         if (functionLiteralMatch) {
           var identifierIsh = functionLiteralMatch[1]
           var argumentSignature = functionLiteralMatch[2]
@@ -206,7 +205,9 @@ module.exports = library.export(
 
       var segments = this.parse(text)
 
-      var expression = {}
+      var expression = {
+        remainder: segments.remainder
+      }
 
       var outro = segments.outro && segments.outro.split("") || []
 
@@ -217,7 +218,6 @@ module.exports = library.export(
       var isVariableAssignment = !isFunctionCall && introName(segments) == "var"
 
       var isStringLiteral = !isVariableAssignment
-
 
       if (isVariableAssignment && forRightHandSide) {
         expression.kind = "string literal"
@@ -233,8 +233,14 @@ module.exports = library.export(
 
       } else if (isFunctionCall) {
         expression.kind = "function call"
-        expression.functionName = segments.identifierIsh
-        expression.remainder = segments.remainder
+
+        if (segments.separator) {
+          expression.functionName = segments.notIdentifier
+          expression.leftHandSide = segments.identifierIsh
+
+        } else {
+          expression.functionName = segments.identifierIsh
+        }
 
       } else if (isVariableAssignment) {
         var remainder = [segments.notIdentifier, segments.outro].join("")
@@ -245,8 +251,8 @@ module.exports = library.export(
       } else if (isStringLiteral) {
         expression.kind = "string literal"
         expression.string = segments.middle
-        debugger
       }
+
 
       return expression
     }
@@ -268,6 +274,8 @@ module.exports = library.export(
     }
 
     Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
+
+      console.log("notice", expression)
 
       if (!this.rootFunctionId) {
 
@@ -342,11 +350,9 @@ module.exports = library.export(
 
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
-
       var remainder = expression.remainder
       delete expression.remainder
 
-      debugger
       this.noticeExpressionAt(lineNumber, expression)
 
       this.syncExpressionToLine(lineNumber, expression)
