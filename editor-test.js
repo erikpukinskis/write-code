@@ -1,7 +1,7 @@
 var runTest = require("run-test")(require)
 
 // runTest.only(
-//   "updating from source")
+//   "can parse call args on same line")
 
 runTest(
   "get some lines",
@@ -105,10 +105,23 @@ runTest(
   function(expect, done, Editor) {
     var editor = new Editor()
     var segments = editor.parse("var foo = bar\"")
-    expect(segments.intro).to.equal("var ")
+    expect(segments.intro).to.equal("var")
     expect(segments.identifierIsh).to.equal("foo")
     expect(segments.separator).to.equal("=")
     expect(segments.notIdentifier).to.equal("bar")
+    done()
+  }
+)
+
+runTest(
+  "can parse call args on same line",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("zoom(1)")
+    expect(segments.identifierIsh).to.equal("zoom")
+    expect(segments.outro).to.equal("(")
+    expect(segments.remainder).to.equal("1)")
     done()
   }
 )
@@ -126,7 +139,7 @@ runTest(
     segments = editor.parse("f)")
 
     segments = editor.parse("\"function \")")
-    expect(segments.intro).to.equal("\"function ")
+    expect(segments.intro).to.equal("function")
 
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
@@ -154,7 +167,7 @@ runTest(
   function(expect, done, Editor) {
     var editor = new Editor()
     segments = editor.parse("\"function \"")
-    expect(segments.intro).to.match(/function/)
+    expect(segments.intro).to.equal("function")
     done()
   }
 )
