@@ -128,7 +128,7 @@ module.exports = library.export(
 
       var introMatch = text.match(/^("?function\s|"?var\s)/) || text.match(/^"/)
       var outroMatch = text.match(/("?function\s|"?var\s|")?(.*?)([\[\]}{(),"]*)$/)
-      var intro = sanitizeIntro(introMatch && introMatch[0])
+      var intro = introMatch && introMatch[0].trim()
       var middle = outroMatch[2]
       var outro = outroMatch[3]
 
@@ -139,18 +139,21 @@ module.exports = library.export(
       if (middle) {
         var functionLiteralMatch = intro == "function" && middle.match(/^\s*(\w*)\s*\(\s*((\w*)\s*(,\s*\w+\s*)*)/)
 
-        var identiferMatch = middle.match(/^\s*([\.\w]+)\s*$/)
+        var identifierMatch = !functionLiteralMatch && middle.match(/^\s*([\.\w]+)\s*$/)
 
-        var separatedMatch = middle.match(/^(.+)\s*\s([=:])\s\s*(.+)$/)
+        var separatedMatch = !identifierMatch && middle.match(/^(.+)\s*\s([=:])\s\s*(.+)$/)
 
-        var callMatch = middle.match(/^(\w+)[(](.*)$/)
+        var callMatch = !separatedMatch && middle.match(/^(\w+)[(](.*)$/)
 
+        var stringCloseMatch = !callMatch && intro == "\"" && middle.match(/^(.*)"(.*)$/)
+
+        debugger
         if (functionLiteralMatch) {
           var identifierIsh = functionLiteralMatch[1]
           var argumentSignature = functionLiteralMatch[2]
 
-        } else if (identiferMatch) {
-          var identifierIsh = identiferMatch[1]
+        } else if (identifierMatch) {
+          var identifierIsh = identifierMatch[1]
 
         } else if (separatedMatch) {
           var identifierIsh = separatedMatch[1]
@@ -159,11 +162,13 @@ module.exports = library.export(
 
         } else if (callMatch) {
           var identifierIsh = callMatch[1]
-          var remainder = callMatch[2]
-          if (outro) {
-            remainder = remainder+outro
-          }
+          var remainder = [callMatch[2], outro].join("")
           var outro = "("
+
+        } else if (stringCloseMatch) {
+          var middle = stringCloseMatch[1]
+          var remainder = [stringCloseMatch[2], outro].join("")
+          var outro = "\""
 
         } else {
           var notIdentifier = middle
@@ -182,10 +187,9 @@ module.exports = library.export(
         remainder: remainder,
       }
 
-      var expectIdentifier = segments.intro && segments.intro.trim() == "var"
+      var expectIdentifier = introName(segments) == "var"
 
       if (expectIdentifier && segments.notIdentifier && !separator) {
-        debugger
         throw new Error("\nthere's probably an identifier in here: "+segments.notIdentifier)
       }
 
@@ -206,13 +210,14 @@ module.exports = library.export(
 
       var outro = segments.outro && segments.outro.split("") || []
 
-      var isFunctionLiteral = segments.intro == "function"
+      var isFunctionLiteral = introName(segments) == "function"
 
       var isFunctionCall = !isFunctionLiteral && segments.outro && !!segments.outro.match(/^\([^{]*$/)
 
-      var isVariableAssignment = !isFunctionCall && segments.intro == "var"
+      var isVariableAssignment = !isFunctionCall && introName(segments) == "var"
 
       var isStringLiteral = !isVariableAssignment
+
 
       if (isVariableAssignment && forRightHandSide) {
         expression.kind = "string literal"
@@ -229,28 +234,25 @@ module.exports = library.export(
       } else if (isFunctionCall) {
         expression.kind = "function call"
         expression.functionName = segments.identifierIsh
+        expression.remainder = segments.remainder
 
       } else if (isVariableAssignment) {
-        expression = this.detectExpression(segments.notIdentifier, true)
+        var remainder = [segments.notIdentifier, segments.outro].join("")
+        expression = this.detectExpression(remainder, true)
         expression.leftHandSide = segments.identifierIsh
         expression.isDeclaration = true
-        debugger
+
       } else if (isStringLiteral) {
         expression.kind = "string literal"
         expression.string = segments.middle
+        debugger
       }
 
       return expression
     }
 
-    function sanitizeIntro(segments) {
-      if (!segments) {
-        return
-      } else if (segments.intro) {
-        var intro = segments.intro
-      } else {
-        var intro = segments
-      }
+    function introName(segments) {
+      var intro = segments.intro
 
       if (!intro) {
         return
@@ -288,6 +290,7 @@ module.exports = library.export(
       expression.id = lineId
 
       if (!lineId) {
+        debugger
         throw new Error("trying to add an expression for a line without an id")
       }
 
@@ -340,9 +343,20 @@ module.exports = library.export(
     Editor.prototype.text = function(lineNumber, text) {
       var expression = this.detectExpression(text)
 
+      var remainder = expression.remainder
+      delete expression.remainder
+
+      debugger
       this.noticeExpressionAt(lineNumber, expression)
 
       this.syncExpressionToLine(lineNumber, expression)
+
+      if (remainder) {
+        lineNumber++
+        return this.text(lineNumber, remainder)
+      } else {
+        return lineNumber
+      }
     }
 
     Editor.prototype.syncExpressionToLine = function(lineNumber, expression) {

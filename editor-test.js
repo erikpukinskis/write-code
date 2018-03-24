@@ -1,7 +1,5 @@
 var runTest = require("run-test")(require)
 
-// runTest.only(
-//   "can parse call args on same line")
 
 runTest(
   "get some lines",
@@ -127,6 +125,19 @@ runTest(
 )
 
 runTest(
+  "can parse a string with remainder",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("\"hello\")(world)")
+    expect(segments.middle).to.equal("hello")
+    expect(segments.outro).to.equal("\"")
+    expect(segments.remainder).to.equal(")(world)")
+    done()
+  }
+)
+
+runTest(
   "function literal symbol parses",
   ["./editor"],
   function(expect, done, Editor) {
@@ -139,7 +150,7 @@ runTest(
     segments = editor.parse("f)")
 
     segments = editor.parse("\"function \")")
-    expect(segments.intro).to.equal("function")
+    expect(segments.intro).to.equal("\"function")
 
     segments = editor.parse("function s(){")
     segments = editor.parse("b})")
@@ -167,7 +178,7 @@ runTest(
   function(expect, done, Editor) {
     var editor = new Editor()
     segments = editor.parse("\"function \"")
-    expect(segments.intro).to.equal("function")
+    expect(segments.intro).to.equal("\"function")
     done()
   }
 )
