@@ -16,8 +16,69 @@ module.exports = library.export(
       this.separators = {}
       this.secondHalves = {}
       this.lineIds = forkableList([])
+      this.rootFunctionId = null
       this.parents = {}
       this.expressions = {}
+    }
+
+    function keysWithValue(list, value) {
+      var matchingKeys = []
+      for(var key in list) {
+        if (list[key] == value) {
+          matchingKeys.push(key)
+        }
+      }
+      return matchingKeys
+    }
+
+    Editor.prototype.dump = function(stack, schema, depth) {
+      if (!stack) {
+        var entrypoint = true
+        stack = []
+        schema = []
+        depth = -1
+        var nodeId = this.rootFunctionId
+      } else {
+        var nodeId = stack.pop()
+      }
+
+      schema.push(this.describe(nodeId, depth))
+
+      var childIds = keysWithValue(this.parents, nodeId)
+      var dump = this.dump.bind(this)
+
+      childIds.forEach(function(childId) {  
+        dump(stack.concat([nodeId, childId]), schema, depth+1)
+      })
+
+      if (entrypoint) {
+        console.log(schema.join("\n"))
+      }
+    }
+
+    function pad(number) {
+      if (typeof number == "undefined") {
+        return "-  "
+      }
+      var spaces = [" "," "," "]
+      var digits = (""+number).split("")
+      return spaces.map(function(space, i) {
+        return digits[i] || space
+      }).join("")
+    }
+
+    Editor.prototype.describe = function(lineId, depth) {
+      var expression = this.expressions[lineId]
+      if (!expression) {
+        var text = "@"+lineId+" is empty"
+      } else {
+        var content = JSON.stringify(expression.functionName || expression.string)
+        var text = "@"+lineId+" ["+expression.kind+"] "+content
+      }
+      var tabs = Array(depth+1).join(" \u00B7 ")
+      var index = this.lineIds.find(lineId)
+      var number = pad(index)+"|"
+      return number+" "+tabs+text
     }
 
     var lastInteger = 1000*50
@@ -355,7 +416,15 @@ module.exports = library.export(
       }
     }
 
+    function expectNotEqual(one, other, message) {
+      if (one === other) {
+        throw new Error(message)
+      }
+    }
+
     Editor.prototype.text = function(lineNumber, text) {
+      expectNotEqual(typeof text, "undefined", "editor.text takes a line number and a string")
+
       var expression = this.detectExpression(text)
       var remainder = expression.remainder
       delete expression.remainder
