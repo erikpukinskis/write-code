@@ -346,17 +346,16 @@ module.exports = library.export(
       console.log("notice", expression)
 
       if (!this.rootFunctionId) {
+        var literal = anExpression.functionLiteral()
 
         if (this.tree) {
-          var literal = anExpression.functionLiteral()
           this.tree.addExpressionAt(
             this.tree.reservePosition(),
             literal)
-          this.rootFunctionId = literal.id
-        } else {
-          this.rootFunctionId = anExpression.id()
         }
 
+        this.rootFunctionId = literal.id
+        this.expressions[literal.id] = literal
         var emptyId = this.ensureSomethingAt(0, this.rootFunctionId)
         this.parents[emptyId] = this.rootFunctionId
       }
