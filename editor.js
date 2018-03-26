@@ -126,8 +126,8 @@ module.exports = library.export(
 
     Editor.prototype.parse = function(text) {
 
-      var introMatch = text.match(/^("?function\s|"?var\s)/) || text.match(/^"/)
-      var outroMatch = text.match(/("?function\s|"?var\s|")?(.*?)([\[\]}{(),"]*)$/)
+      var introMatch = text.match(/^(\s*"?function\s|\s*"?var\s|\s*\[|\s*")/) || text.match(/^"/)
+      var outroMatch = text.match(/(\s*"?function\s|\s*"?var\s|\s*\[|\s*")?(.*?)([\[\]}{(),"\]]*)$/)
       var intro = introMatch && introMatch[0].trim()
       var middle = outroMatch[2]
       var outro = outroMatch[3]
@@ -137,7 +137,9 @@ module.exports = library.export(
       }
 
       if (middle) {
-        var functionLiteralMatch = intro == "function" && middle.match(/^\s*(\w*)\s*\(\s*((\w*)\s*(,\s*\w+\s*)*)/)
+        var arrayMatch = intro == "["
+
+        var functionLiteralMatch = !arrayMatch && intro == "function" && middle.match(/^\s*(\w*)\s*\(\s*((\w*)\s*(,\s*\w+\s*)*)/)
 
         var identifierMatch = !functionLiteralMatch && middle.match(/^\s*([\.\w]+)\s*$/)
 
@@ -147,7 +149,11 @@ module.exports = library.export(
 
         var stringCloseMatch = !callMatch && intro == "\"" && middle.match(/^(.*)"(.*)$/)
 
-        if (functionLiteralMatch) {
+        if (arrayMatch) {
+          var remainder = [middle, outro].join("")
+          outro = undefined
+
+        } else if (functionLiteralMatch) {
           var identifierIsh = functionLiteralMatch[1]
           var argumentSignature = functionLiteralMatch[2]
 
@@ -158,16 +164,17 @@ module.exports = library.export(
           var identifierIsh = separatedMatch[1]
           var separator = separatedMatch[2]
           var notIdentifier = separatedMatch[3]
+          outro = undefined
 
         } else if (callMatch) {
           var identifierIsh = callMatch[1]
           var remainder = [callMatch[2], outro].join("")
-          var outro = "("
+          outro = "("
 
         } else if (stringCloseMatch) {
           var middle = stringCloseMatch[1]
           var remainder = [stringCloseMatch[2], outro].join("")
-          var outro = "\""
+          outro = "\""
 
         } else {
           var notIdentifier = middle

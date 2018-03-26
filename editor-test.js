@@ -195,6 +195,18 @@ runTest(
 )
 
 runTest(
+  "array parses",
+  ["./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var segments = editor.parse("[\"web-element\", \"browser-bridge\"],")
+    expect(segments.intro).to.equal("[")
+    expect(segments.remainder).to.equal("\"web-element\", \"browser-bridge\"],")
+    done()
+  }
+)
+
+runTest(
   "updating from source",
   ["./editor"],
   function(expect, done, Editor) {
