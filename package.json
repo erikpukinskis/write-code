@@ -9,7 +9,7 @@
     "bridge-module": "*",
     "event-stream": "^3.3.4",
     "forkable-list": "*",
-    "module-library": "^0.84.0"
+    "module-library": "^0.89.0"
   },
   "devDependencies": {
     "a-wild-universe-appeared": "^0.33.0",
