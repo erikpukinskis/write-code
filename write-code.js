@@ -2,6 +2,8 @@ var library = require("module-library")(require)
 
 // Todo:   capture enter keypress and start new string literal
 
+
+
 module.exports = library.export(
   "write-code",
   [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared"],
@@ -73,7 +75,9 @@ module.exports = library.export(
       ".line",
       element.style({
         "margin-top": "0.5em",
-        "min-height": "1em" }))
+        "min-height": "1em" }),
+      function(lineId, depth, intro, firstHalf, separator, secondHalf, outro) {
+        })
 
     var lines = element.template(
       ".lines" , {
@@ -81,20 +85,53 @@ module.exports = library.export(
       element.style({
         "margin-left": "1em",
         "font-size": "30px"}),
-      function(bridge, editLoop) {
+      function(bridge, editLoop, editor) {
         this.addAttributes({
           "onkeydown": editLoop.evalable()})
+
+        var lineIds = editor.lineIds.values()
+
+        var lineElements = lineIds.map(
+          function(lineId) {
+            return line(lineId, depth, intro, firstHalf, separator, secondHalf, outro)})
+
+        this.addChildren(
+          lineElements)
      })
 
-    function prepareSite(site) {
+    var programUniverses = {}
+
+    function prepareSite(site, universe, name) {
+      programUniverses[name] = universe
+
+      if (site.remember("write-code")) {
+        return
+      }
+
       site.addRoute(
-        "get",
-        "/lightpaperfibers.png",
-        // Thanks Atle Mo of http://atle.co
-        site.sendFile(__dirname, "lightpaperfibers.png"))
+        "post",
+        "/universes/expression-trees/:name",
+        function(request, response) {
+          var moduleName = request.params.name
+          var statement = request.body
+
+          var doArgs = [statement.functionName].concat(statement.args)
+
+          var universe = programUniverses[name]
+
+          universe.do.apply(universe, doArgs)
+
+          response.send({ok: true})
+        }
+      )
+
+      site.see("write-code", true);
     }
 
-    function writeCode(bridge, treeBinding) {
+
+    // Do I really want to boot writeCode off a universe? I'd need an ID too, and then I'd boot the universe on the client?
+
+    function writeCode(bridge, treeBinding, tree) {
 
       prepareBridge(bridge)
 
@@ -107,11 +144,19 @@ module.exports = library.export(
         }
       )
 
-      var editLoop = bridgeModule(lib, "./edit-loop", bridge)
+      var editLoop = bridgeModule(
+        lib,
+        "./edit-loop",
+        bridge)
+      .withArgs(
+        editor,
+        bridge.event)
+
+      editor.importTree(tree)
 
       var page = [
         element("h1", "ezjs"),
-        lines(bridge, editLoop.withArgs(editor, bridge.event)),
+        lines(bridge, editLoop, editor),
       ]
 
       bridge.send(page)
