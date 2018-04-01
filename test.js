@@ -2,6 +2,35 @@ var runTest = require("run-test")(require)
 
 
 runTest(
+  "import tree",
+  ["./editor", "an-expression"],
+  function(expect, done, Editor, anExpression) {
+    var tree = anExpression.tree()
+
+    tree.addExpressionAt(
+      0,{
+      "kind": "string literal",
+      "string": "blah",
+      id: anExpression.id()})
+
+    var editor = new Editor(tree)
+
+    expect(editor.lineIds.length).to.equal(1)
+
+    // save first half
+    // get intro and outro quotes
+    // function literals get symbol
+    // function literal outro
+    // function literal args
+    // function call outro
+    // call parent
+    // call arg closes right line
+
+    done()
+  }
+)
+
+runTest(
   "get some lines",
   ["./editor", "an-expression", "a-wild-universe-appeared"],
   function(expect, done, Editor, anExpression, aWildUniverseAppeared) {

@@ -7,7 +7,6 @@ module.exports = library.export(
 
     function Editor(tree) {
       this.tree = tree
-      this.importTree(tree)
       this.intros = {}
       this.outros = {}
       this.commas = {}
@@ -20,12 +19,15 @@ module.exports = library.export(
       this.rootFunctionId = null
       this.parents = {}
       this.expressions = {}
+      if (tree) {
+        importTree(this, tree)
+      }
     }
 
-    Editor.prototype.importTree = function(tree) {
-      var editor = this
+    function importTree(editor, tree) {
       tree.expressionIds.forEach(
-        function(lineId) {
+        function(lineId, index) {
+          editor.lineIds.set(index, lineId)
         })
     }
 
@@ -350,8 +352,6 @@ module.exports = library.export(
     }
 
     Editor.prototype.noticeExpressionAt = function(lineNumber, expression) {
-
-      console.log("notice", expression)
 
       if (!this.rootFunctionId) {
         var literal = anExpression.functionLiteral()

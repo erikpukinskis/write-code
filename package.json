@@ -21,7 +21,7 @@
     "web-site": "^0.49.0"
   },
   "scripts": {
-    "test": "node editor-test"
+    "test": "node test"
   },
   "repository": {
     "type": "git",
