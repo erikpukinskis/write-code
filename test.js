@@ -22,8 +22,10 @@ runTest(
     expect(editor.firstHalves[lineId]).to.equal("blah")
     done.ish("import string bodies")
 
-    // save first half
-    // get intro and outro quotes
+    expect(editor.intros[lineId]).to.equal("\"")
+    expect(editor.outros[lineId]).to.deep.equal(["\""])
+    done.ish("import intro and outro quotes")
+
     // function literals get symbol
     // function literal outro
     // function literal args

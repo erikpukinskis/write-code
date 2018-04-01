@@ -31,6 +31,8 @@ module.exports = library.export(
           var kind = tree.getAttribute("kind", lineId)
           if (kind == "string literal") {
             editor.firstHalves[lineId] = tree.getAttribute("string", lineId)
+            editor.intros[lineId] = symbolText.quote
+            editor.outros[lineId] = [symbolText.quote]
           }
         })
     }
