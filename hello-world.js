@@ -1,18 +1,22 @@
 
-codeLibrary.add(
-  "hello world",
-  ["appeared-a-wild", "web-element"],
-  function(appearedAWild, webElement) {
-    appearedAWild(
-      "browser-bridge",
-      function(bridge) {
-        bridge.send(
-          webElement(
-          "hello, world"))})
+// codeLibrary.add(
+//   "hello world",
+//   ["appeared-a-wild", "web-element"],
+
+function(appearedAWild, webElement) {
+  appearedAWild(
+    "browser-bridge",
+    function(bridge) {
+      bridge.send(
+        webElement(
+        "hello, world"))}
+
+// )
 
 
-library.using(
-  ["issueBond", "accountability"],
+library.using([
+  "issueBond",
+  "accountability"],
   function(issueBond, accountability) {
     issueBond.lineItem (
       "workshop" ,
@@ -23,14 +27,21 @@ library.using(
 
 
 library.define(
-  "a-panel-bond",
-  ["issue-bond", "inches", "sell-bond"],
+  "a-panel-bond",[
+  "issue-bond",
+  "inches",
+  "sell-bond"],
   function(issueBond, inches, sellBond) {
-    issueBond("a-panel", "Wall panel A", "Erik Pukinskis")
+    issueBond(
+      "a-panel",
+      "Wall panel A",
+      "Erik Pukinskis")
     var wallHeight = 88
-    issueBond.tasks("a-panel", [
+    issueBond.tasks("a-panel",[
       "reserve a truck",
       "buy materials",
-      "cut 4 steel studs to "+inches(
+      "cut 4 steel studs to "+
+      inches(
         wallHeight)])
-    sellBond("a-panel")})
+    sellBond(
+      "a-panel")})
