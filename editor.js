@@ -28,6 +28,10 @@ module.exports = library.export(
       tree.expressionIds.forEach(
         function(lineId, index) {
           editor.lineIds.set(index, lineId)
+          var kind = tree.getAttribute("kind", lineId)
+          if (kind == "string literal") {
+            editor.firstHalves[lineId] = tree.getAttribute("string", lineId)
+          }
         })
     }
 

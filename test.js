@@ -16,6 +16,11 @@ runTest(
     var editor = new Editor(tree)
 
     expect(editor.lineIds.length).to.equal(1)
+    done.ish("import tree ids")
+    var lineId = editor.lineIds.get(0)
+
+    expect(editor.firstHalves[lineId]).to.equal("blah")
+    done.ish("import string bodies")
 
     // save first half
     // get intro and outro quotes
