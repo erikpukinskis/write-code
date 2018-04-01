@@ -3,8 +3,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared"],
-  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, LinesXXXX, aWildUniverseAppeared) {
+  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared", "an-expression"],
+  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, Editor, aWildUniverseAppeared, anExpression) {
 
     function prepareBridge(bridge) {
 
@@ -132,13 +132,14 @@ module.exports = library.export(
 
       prepareBridge(bridge)
 
-      var editor = bridge.defineSingleton(
+      var editorBinding = bridge.defineSingleton(
         "editor",[
         bridgeModule(lib, "./editor", bridge),
         bridgeModule(lib, "./boot-tree", bridge),
         universe.builder(),
-        treeId],
-        function(Editor, bootTree, baseLog, treeId) {
+        treeId,
+        moduleName],
+        function(Editor, bootTree, baseLog, treeId, moduleName) {
           var tree = bootTree(treeId, moduleName, baseLog)
           return new Editor(tree)
         }
@@ -149,10 +150,11 @@ module.exports = library.export(
         "./edit-loop",
         bridge)
       .withArgs(
-        editor,
+        editorBinding,
         bridge.event)
 
-      editor.importTree(tree)
+      var tree = anExpression.getTree(treeId)
+      var editor = new Editor(tree)
 
       var page = [
         element("h1", "ezjs"),

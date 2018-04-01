@@ -7,16 +7,14 @@ module.exports = library.export(
   "make-request"],
   function(aWildUniverseAppeared, anExpression, makeRequest) {
 
-    // this is the old one that had id rewriting working
+    // This is happening in the browser!
     
     function bootTree(treeId, moduleName, baseLog) {
 
       var universe = aWildUniverseAppeared(
         "expression-tree", {
-        anExpression: "an-expression"}, baseLog)
-
-      universe.mirrorTo({
-        "an-expression": anExpression})
+        anExpression: anExpression},
+        baseLog)
 
       universe.playItBack()
 
