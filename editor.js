@@ -7,6 +7,7 @@ module.exports = library.export(
 
     function Editor(tree) {
       this.tree = tree
+      this.importTree(tree)
       this.intros = {}
       this.outros = {}
       this.commas = {}
@@ -19,6 +20,13 @@ module.exports = library.export(
       this.rootFunctionId = null
       this.parents = {}
       this.expressions = {}
+    }
+
+    Editor.prototype.importTree = function(tree) {
+      var editor = this
+      tree.expressionIds.forEach(
+        function(lineId) {
+        })
     }
 
     function keysWithValue(list, value) {

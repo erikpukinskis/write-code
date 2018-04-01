@@ -1,8 +1,5 @@
 var library = require("module-library")(require)
 
-// Todo:   capture enter keypress and start new string literal
-
-
 
 module.exports = library.export(
   "write-code",
@@ -131,15 +128,18 @@ module.exports = library.export(
 
     // Do I really want to boot writeCode off a universe? I'd need an ID too, and then I'd boot the universe on the client?
 
-    function writeCode(bridge, treeBinding, tree) {
+    function writeCode(bridge, universe, treeId, moduleName) {
 
       prepareBridge(bridge)
 
       var editor = bridge.defineSingleton(
         "editor",[
         bridgeModule(lib, "./editor", bridge),
-        treeBinding],
-        function(Editor, tree) {
+        bridgeModule(lib, "./boot-tree", bridge),
+        universe.builder(),
+        treeId],
+        function(Editor, bootTree, baseLog, treeId) {
+          var tree = bootTree(treeId, moduleName, baseLog)
           return new Editor(tree)
         }
       )
