@@ -1,8 +1,50 @@
 var runTest = require("run-test")(require)
 
+runTest(
+  "import function literal",
+  ["./editor", "an-expression"],
+  function(expect, done, Editor, anExpression) {
+    var tree = anExpression.tree()
+
+    tree.addExpressionAt(
+      0,{
+      "kind": "function literal",
+      "functionName": "myFunc",
+      "argumentNames": ["blee", "bloop"],
+      id: anExpression.id()})
+
+    var editor = new Editor(tree)
+    var lineId = editor.lineIds.get(0)
+
+    expect(editor.firstHalves[lineId]).to.equal("myFunc")
+    done.ish("import function names")
+
+    expect(editor.intros[lineId]).to.equal("function")
+    done.ish("import function intro")
+
+    expect(editor.separators[lineId]).to.equal("arguments-open")
+    done.ish("import function separator")
+
+    expect(editor.secondHalves[lineId]).to.equal("blee, bloop")
+    done.ish("import function argument signature")
+
+    expect(editor.outros[lineId]).to.deep.equal(["arguments-close", "curly-open"])
+    done.ish("import function outro")
+
+    done()
+  }
+)
+
+    // function literals get symbol
+    // function literal outro
+    // function literal args
+    // function call outro
+    // call parent
+    // call arg closes right line
+
 
 runTest(
-  "import tree",
+  "import string",
   ["./editor", "an-expression"],
   function(expect, done, Editor, anExpression) {
     var tree = anExpression.tree()
@@ -22,16 +64,9 @@ runTest(
     expect(editor.firstHalves[lineId]).to.equal("blah")
     done.ish("import string bodies")
 
-    expect(editor.intros[lineId]).to.equal("\"")
-    expect(editor.outros[lineId]).to.deep.equal(["\""])
+    expect(editor.intros[lineId]).to.equal("quote")
+    expect(editor.outros[lineId]).to.deep.equal(["quote"])
     done.ish("import intro and outro quotes")
-
-    // function literals get symbol
-    // function literal outro
-    // function literal args
-    // function call outro
-    // call parent
-    // call arg closes right line
 
     done()
   }

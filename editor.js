@@ -29,10 +29,26 @@ module.exports = library.export(
         function(lineId, index) {
           editor.lineIds.set(index, lineId)
           var kind = tree.getAttribute("kind", lineId)
+
           if (kind == "string literal") {
+            editor.intros[lineId] = "quote"
             editor.firstHalves[lineId] = tree.getAttribute("string", lineId)
-            editor.intros[lineId] = symbolText.quote
-            editor.outros[lineId] = [symbolText.quote]
+            editor.outros[lineId] = ["quote"]
+
+          } else if (kind == "function literal") {
+            editor.intros[lineId] = "function"
+            editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId) || Editor.EMPTY
+            editor.separators[lineId] = "arguments-open"
+            var argumentNames
+            tree.eachListItem("argumentNames", lineId, function(name) {
+              if (argumentNames) {
+                argumentNames += ", "+name
+              } else {
+                argumentNames = name
+              }
+            })
+            editor.secondHalves[lineId] = argumentNames || Editor.EMPTY
+            editor.outros[lineId] = ["arguments-close", "curly-open"]
           }
         })
     }
