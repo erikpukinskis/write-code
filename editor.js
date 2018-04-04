@@ -19,70 +19,99 @@ module.exports = library.export(
       this.rootFunctionId = null
       this.parents = {}
       this.expressions = {}
+
+      var editor = this
+
       if (tree) {
-        importTree(this, tree)
+        tree.expressionIds.forEach(
+          function(lineId, lineNumber) {
+            importLine(editor, tree, lineId, lineNumber)})
       }
     }
 
-    function importTree(editor, tree) {
-      tree.expressionIds.forEach(
-        function(lineId, lineNumber) {
+    function importLine(editor, tree, lineId, lineNumber) {
 
-          editor.lineIds.set(lineNumber, lineId)
+      editor.lineIds.set(lineNumber, lineId)
 
-          var kind = tree.getAttribute("kind", lineId)
+      var kind = tree.getAttribute("kind", lineId)
 
-          if (kind == "string literal") {
-            editor.intros[lineId] = "quote"
-            editor.firstHalves[lineId] = tree.getAttribute("string", lineId)
-            editor.outros[lineId] = ["quote"]
+      if (kind == "string literal") {
+        editor.intros[lineId] = "quote"
+        editor.firstHalves[lineId] = tree.getAttribute("string", lineId)
+        editor.outros[lineId] = ["quote"]
 
-          } else if (kind == "function literal") {
-            editor.intros[lineId] = "function"
-            editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId) || Editor.EMPTY
-            editor.separators[lineId] = "arguments-open"
-            var argumentNames
-            tree.eachListItem("argumentNames", lineId, function(name) {
-              if (argumentNames) {
-                argumentNames += ", "+name
-              } else {
-                argumentNames = name
-              }
-            })
-            editor.secondHalves[lineId] = argumentNames || Editor.EMPTY
-            editor.outros[lineId] = ["arguments-close", "curly-open"]
-
-          } else if (kind == "function call") {
-            editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId)
-            editor.outros[lineId] = ["left-paren"]
-          }
-
-          var parentId = tree.getAttribute("parentId", lineId)
-
-          if (!parentId) {
-            return
-          }
-
-          editor.parents[lineId] = parentId
-
-          var kindOfParent = tree.getAttribute("kind", parentId)
-
-          var isCallArg = kindOfParent == "function call"
-
-          var previousLineId = tree.expressionIds.get(lineNumber - 1)
-
-          if (!previousLineId) {
-            return
-          }
-
-          var parentOfPrevious = tree.getAttribute("parentId", previousLineId)
-
-          var precededBySibling = parentOfPrevious == parentId
-
-          if (precededBySibling && isCallArg) {
-            editor.outros[previousLineId].push("comma")
+      } else if (kind == "function literal") {
+        editor.intros[lineId] = "function"
+        editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId) || Editor.EMPTY
+        editor.separators[lineId] = "arguments-open"
+        var argumentNames
+        tree.eachListItem("argumentNames", lineId, function(name) {
+          if (argumentNames) {
+            argumentNames += ", "+name
+          } else {
+            argumentNames = name
           }
         })
+        editor.secondHalves[lineId] = argumentNames || Editor.EMPTY
+        editor.outros[lineId] = ["arguments-close", "curly-open"]
+
+      } else if (kind == "function call") {
+        editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId)
+        editor.outros[lineId] = ["left-paren"]
+      }
+
+      var parentId = tree.getAttribute("parentId", lineId)
+
+      if (!parentId) {
+        return
+      }
+
+      editor.parents[lineId] = parentId
+
+      var kindOfParent = tree.getAttribute("kind", parentId)
+
+      var isCallArg = kindOfParent == "function call"
+
+      var previousLineId = tree.expressionIds.get(lineNumber - 1)
+
+      if (previousLineId) {
+
+        var parentOfPrevious = tree.getAttribute("parentId", previousLineId)
+
+        var precededBySibling = parentOfPrevious == parentId
+
+        if (precededBySibling && isCallArg) {
+          ensureArray(editor.outros, previousLineId)
+          editor.outros[previousLineId].push("comma")
+        }
+      }
+
+      var nextLineId = tree.expressionIds.get(lineNumber+1)
+
+      if (nextLineId) {
+        var parentOfNext = tree.getAttribute("parentId", nextLineId)
+
+        var followedBySibling = parentOfNext == parentId
+      } else {
+        followedBySibling = false
+      }
+
+      if (parentId && !followedBySibling) {
+        ensureArray(editor.linesClosedOn, lineId)
+        editor.linesClosedOn[lineId].push(parentId)
+        ensureArray(editor.outros, previousLineId)
+
+        debugger
+        editor.outros[lineId].push(closerForKind(kindOfParent))
+      }
+
+      // yay, imported a line
+    }
+
+    function ensureArray(object, key) {
+      if (!object[key]) {
+        object[key] = []
+      }
     }
 
     function keysWithValue(list, value) {
@@ -427,7 +456,6 @@ module.exports = library.export(
       expression.id = lineId
 
       if (!lineId) {
-        debugger
         throw new Error("trying to add an expression for a line without an id")
       }
 
@@ -537,7 +565,8 @@ module.exports = library.export(
         delete this.linesClosedOn[lineId]
         this.linesClosedOn[nextLineId] = linesPreviouslyClosedHere
 
-        this.howToClose[lineId] = "curly-close"
+        this.howToClose[lineId] = closerForKind(expression.kind)
+
         ensureContains(this.linesClosedOn, nextLineId, lineId)
 
       } else if (expression.kind == "function call") {
@@ -549,7 +578,7 @@ module.exports = library.export(
         delete this.separators[lineId]
 
         this.outros[lineId] = "left-paren"
-        this.howToClose[lineId] = "right-paren"
+        this.howToClose[lineId] = closerForKind(expression.kind)
 
         if (linesPreviouslyClosedHere) {
           var nextLineId = this.addLineAfter(lineNumber, lineId)
@@ -571,6 +600,12 @@ module.exports = library.export(
         delete this.secondHalves[lineId]
       }
     }
+
+    function closerForKind(kind) {
+      return {
+        "function literal": "curly-close",
+        "function call": "right-paren"
+      }[kind]}
 
     Editor.prototype.ensureSomethingAt = function(lineNumber, parentId) {
       var lineId = this.lineIds.get(lineNumber)
