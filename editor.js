@@ -26,8 +26,10 @@ module.exports = library.export(
 
     function importTree(editor, tree) {
       tree.expressionIds.forEach(
-        function(lineId, index) {
-          editor.lineIds.set(index, lineId)
+        function(lineId, lineNumber) {
+
+          editor.lineIds.set(lineNumber, lineId)
+
           var kind = tree.getAttribute("kind", lineId)
 
           if (kind == "string literal") {
@@ -49,6 +51,36 @@ module.exports = library.export(
             })
             editor.secondHalves[lineId] = argumentNames || Editor.EMPTY
             editor.outros[lineId] = ["arguments-close", "curly-open"]
+
+          } else if (kind == "function call") {
+            editor.firstHalves[lineId] = tree.getAttribute("functionName", lineId)
+            editor.outros[lineId] = ["left-paren"]
+          }
+
+          var parentId = tree.getAttribute("parentId", lineId)
+
+          if (!parentId) {
+            return
+          }
+
+          editor.parents[lineId] = parentId
+
+          var kindOfParent = tree.getAttribute("kind", parentId)
+
+          var isCallArg = kindOfParent == "function call"
+
+          var previousLineId = tree.expressionIds.get(lineNumber - 1)
+
+          if (!previousLineId) {
+            return
+          }
+
+          var parentOfPrevious = tree.getAttribute("parentId", previousLineId)
+
+          var precededBySibling = parentOfPrevious == parentId
+
+          if (precededBySibling && isCallArg) {
+            editor.outros[previousLineId].push("comma")
           }
         })
     }

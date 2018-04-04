@@ -1,6 +1,58 @@
 var runTest = require("run-test")(require)
 
 runTest(
+  "import function call",
+  ["./editor", "an-expression"],
+  function(expect, done, Editor, anExpression) {
+    var tree = anExpression.tree()
+
+    tree.addExpressionAt(
+      0,{
+      "kind": "function call",
+      "functionName": "go",
+      id: "exp-call1"})
+
+    tree.addToParent(
+      "exp-call1",{
+      "kind": "string literal",
+      "string": "blast",
+      id: "exp-string1"})
+
+    tree.addToParent(
+      "exp-call1",{
+      "kind": "string literal",
+      "string": "off",
+      id: "exp-string2"})
+
+    var editor = new Editor(tree)
+
+    expect(editor.lineIds.length).to.equal(3)
+
+    expect(editor.firstHalves["exp-call1"]).to.equal("go")
+    done.ish("import function call name")
+
+    expect(editor.outros["exp-call1"]).to.deep.equal(["left-paren"])
+    done.ish("import function call outro")
+
+    expect(editor.firstHalves["exp-string1"]).to.equal("blast")
+    expect(editor.parents["exp-string1"]).to.equal("exp-call1")
+    expect(editor.parents["exp-string2"]).to.equal("exp-call1")
+    done.ish("imported call args have a parent")
+
+    expect(editor.outros["exp-string1"]).to.deep.equal(["quote", "comma"])
+    done.ish("multiple imported args get comma")
+
+    expect(editor.linesClosedOn["exp-string2"]).to.deep.equal(["exp-call1"])
+    done.ish("last call arg closes line")
+
+    expect(editor.outros["exp-string2"]).to.deep.equal(["quote", "right-paren"])
+    done.ish("last call arg gets paren in outro")
+
+    done()
+  }
+)
+
+runTest(
   "import function literal",
   ["./editor", "an-expression"],
   function(expect, done, Editor, anExpression) {
