@@ -3,8 +3,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared", "an-expression"],
-  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, Editor, aWildUniverseAppeared, anExpression) {
+  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared", "an-expression", "./render-javascript"],
+  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, Editor, aWildUniverseAppeared, anExpression, renderJavascript) {
 
     function prepareBridge(bridge) {
 
@@ -14,7 +14,7 @@ module.exports = library.export(
       bridge.see("write-code", true)
 
       var focus = element.style(
-        ".lines:focus", {
+        ".editable:focus", {
         "outline": "none"})
 
       var token = element.style(
@@ -48,7 +48,7 @@ module.exports = library.export(
 
       bridge.domReady(
         function() {
-          document.querySelector(".lines").focus()
+          document.querySelector(".editable").focus()
         })
 
       var body = element.style(
@@ -61,39 +61,24 @@ module.exports = library.export(
       bridge.addToHead(
         element.stylesheet(
           body,
-          line,
-          lines,
+          editable,
           token,
           focus))
     }
 
 
-    var line = element.template(
-      ".line",
-      element.style({
-        "margin-top": "0.5em",
-        "min-height": "1em" }),
-      function(lineId, depth, intro, firstHalf, separator, secondHalf, outro) {
-        })
 
-    var lines = element.template(
-      ".lines" , {
+    var editable = element.template(
+      ".editable" , {
       "contenteditable": "true"},
       element.style({
         "margin-left": "1em",
         "font-size": "30px"}),
-      function(bridge, editLoop, editor) {
+      function(bridge, editLoop, lines) {
         this.addAttributes({
           "onkeydown": editLoop.evalable()})
-
-        var lineIds = editor.lineIds.values()
-
-        var lineElements = lineIds.map(
-          function(lineId) {
-            return line(lineId, depth, intro, firstHalf, separator, secondHalf, outro)})
-
-        this.addChildren(
-          lineElements)
+        this.addChild(
+          lines)
      })
 
     var programUniverses = {}
@@ -125,8 +110,14 @@ module.exports = library.export(
       site.see("write-code", true);
     }
 
-
-    // Do I really want to boot writeCode off a universe? I'd need an ID too, and then I'd boot the universe on the client?
+    var logo = element(
+      ".layer.layer0",
+      element.style({
+        "margin-top": "4em",
+        "float": "right"}),
+      element(
+        "span.text-symbol.symbol.logo",
+        "ezjs"))
 
     function writeCode(bridge, universe, treeId, moduleName) {
 
@@ -156,9 +147,26 @@ module.exports = library.export(
       var tree = anExpression.getTree(treeId)
       var editor = new Editor(tree)
 
+      var lines = bridge.partial()
+
+      renderJavascript.prepareBridge(bridge)
+
+      renderJavascript(lines, function(addLine) {
+        editor.lineIds.forEach(
+          function(lineId, lineNumber) {
+            addLine(
+              editor.depthOf(lineId),
+              editor.intros[lineId],
+              editor.firstHalves[lineId],
+              editor.separators[lineId],
+              editor.secondHalves[lineId],
+              editor.outros[lineId])
+          })})
+
+
       var page = [
-        element("h1", "ezjs"),
-        lines(bridge, editLoop, editor),
+        editable(bridge, editLoop, lines),
+        logo
       ]
 
       bridge.send(page)

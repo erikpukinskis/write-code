@@ -607,6 +607,14 @@ module.exports = library.export(
         "function call": "right-paren"
       }[kind]}
 
+    Editor.prototype.depthOf = function(lineId) {
+      var depth = 0
+      while(lineId = this.parents[lineId]) {
+        depth++
+      }
+      return depth
+    }
+
     Editor.prototype.ensureSomethingAt = function(lineNumber, parentId) {
       var lineId = this.lineIds.get(lineNumber)
       if (!lineId) {

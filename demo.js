@@ -14,18 +14,18 @@ library.using([
 
     var site = new WebSite()
 
-    writeCode.prepareSite(site)
-
-    var programs = aWildUniverseAppeared(
-      "programs", {
+    var universe = aWildUniverseAppeared(
+      "hello-world", {
       anExpression: "an-expression"})
 
     var tree = anExpression.tree()
-    tree.logTo(programs, true)
+    tree.logTo(universe, true)
 
     tree.addExpressionAt(
       tree.reservePosition(),
       anExpression.functionLiteral())
+
+    writeCode.prepareSite(site, universe, "hello-world")
 
     site.addRoute(
       "get",
@@ -37,7 +37,7 @@ library.using([
 
         var name = request.params.name
 
-        writeCode(bridge, programs, tree.id, name)
+        writeCode(bridge, universe, tree.id, name)
       }
     )
 
