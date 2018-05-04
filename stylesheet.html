@@ -98,17 +98,17 @@ var linesOfHtml =[
   "dogs.do(",
   "  \"laugh\"[",
   "  \"one\",",
-  "  \"two two Two\"],",
+  "  \"two. two Two they function they drop a line or two\"],",
   "  function*(this, that, theOther) {",
   "    var bone =newTreat(",
   "      *)",
   "    dogs.start(",
   "      3433,{",
   "      \"go\":\"go go\"})",
-  "   browserBridge(",
-  "     ).forResponse(",
-  "        response)",
-  "        ezjs",
+  "     browserBridge(",
+  "       ).forResponse(",
+  "         response)})",
+  "         ezjs",
 ].map(function(line) {
   var symbol
   var text
@@ -122,7 +122,7 @@ var linesOfHtml =[
       return parts[0]
     }
     var firstCharacter = line[0]
-    if (["*", "\"", "{", "}", "(", ")", "[", "]", "=", ":"].includes(firstCharacter)) {
+    if (["*", "\"", "{", "}", "(", ")", "[", "]", "=", ":", "."].includes(firstCharacter)) {
       return firstCharacter
     }
   }
