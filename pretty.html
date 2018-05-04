@@ -1,0 +1,149 @@
+<head>
+<style>
+sym, txt {
+}
+
+sym {
+  text-indent: 0;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  text-align: center;
+  min-width: 0.5em;
+  font-weight: bold;
+  background-color: #f6f6ff;
+  color: #99b;
+}
+
+sym, empty {
+  display: inline-block;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+
+empty {
+  width: 0.66em;
+  height: 0.66em;
+  box-sizing: border-box;
+  border-radius: 0.22em;
+  border: 0.1em solid #ddd;
+}
+
+
+empty:first-child, sym:first-child {
+  margin-left: 0;
+}
+
+txt {
+  color: #222;
+  -webkit-font-smoothing: antialiased;
+  display: inline;
+}
+
+line {
+  font-family: sans-serif;
+  line-height: 1.25em;
+  margin-bottom: 0.3em;
+  font-size: 1.33em;
+  display: block;
+  max-width: 18em;
+  border-right: 0.1em solid  #f6f6ff;
+  box-sizing: border-box;
+  text-indent: -1.4em;
+}
+
+body {
+  padding-left: 6em;
+  padding-top: 8em;
+  padding-bottom: 6em;
+}
+</style>
+</head>
+<body></body>
+<script>
+var linesOfHtml =[
+  "library.define(",
+  "  \"hello world\"[",
+  "  \"web-site\",",
+  "  \"web-element\",",
+  "  \"browser-bridge\"],",
+  "  function*(WebSite, element, BrowserBridge) {",
+  "    var site =newWebSite(",
+  "      *)",
+  "    site.start(",
+  "      3444)",
+  "    var page = element(",
+  "      \"hello world\")",
+  "    site.addRoute(",
+  "      \"get\",",
+  "      \"/\",",
+  "      function*(_, response) {",
+  "        var bridge =newBrowserBridge(",
+  "          ).forResponse(",
+  "            response)",
+  "        bridge.send(",
+  "          page)})})",
+  "          *",
+  "          ezjs",
+].map(function(line) {
+  var symbol
+  var text
+
+  function grabSymbol() {
+    if (line == ",") {
+      return ","
+    }
+    var parts = line.match(/^(function|var|new|ezjs)/)
+    if (parts) {
+      return parts[0]
+    }
+    var firstCharacter = line[0]
+    if (["*", "\"", "{", "}", "(", ")", "[", "]", "="].includes(firstCharacter)) {
+      return firstCharacter
+    }
+  }
+
+  function biteSymbol() {
+    var symbolText = grabSymbol()
+    if (symbolText) {
+      line = line.slice(symbolText.length)
+      return symbolText
+    }
+  }
+
+  function biteText() {
+    if (grabSymbol()) {
+      return
+    }
+    if (line.length > 0) {
+      var text = line.match(/^[^"}{)(=]*/)[0]
+      line = line.slice(text.length)
+      return text
+    }
+  }
+
+  var spaces = line.match(/^ */)[0].length
+  var width = spaces/1.5+"em"
+  line = line.slice(spaces)
+  var html = "<line style=\"padding-left: "+width+"\">"
+  var sym
+  var txt
+
+  while((sym = biteSymbol()) || (txt = biteText())) {
+    if (sym == "*") {
+      html += "<empty></empty>"
+    } else if (sym) {
+      html += "<sym>"+sym+"</sym>"
+    } else if (txt) {
+      html += "<txt>"+txt+"</txt>"
+    }
+  }
+
+  html += "</line>"
+
+  return html
+})
+
+console.log(linesOfHtml)
+
+document.body.innerHTML = linesOfHtml.join("\n")
+</script>
