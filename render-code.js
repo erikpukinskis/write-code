@@ -8,6 +8,7 @@ module.exports = library.export(
     function renderCode(bridge, lines) {
       prepareBridge(bridge)
 
+      var allowObjects = lines[0] == "dogs.do("
       var stack = []
 
       var linesOfHtml = lines.map(function(line) {
@@ -50,7 +51,7 @@ module.exports = library.export(
               stack.push(sym)
             }
 
-            html += "<sym class=\""+literalClass(stack, sym)+"\">"+sym+"</sym>"
+            html += "<sym class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
 
             if (["}", "]"].includes(sym)) {
               stack.pop()
@@ -69,7 +70,7 @@ module.exports = library.export(
       bridge.send(linesOfHtml.join("\n"))
     }
 
-    function literalClass(stack, sym) {
+    function literalClass(stack, sym, allowObjects) {
       if (sym.length > 1) {
         var classes = "text "
       } else {
@@ -81,7 +82,7 @@ module.exports = library.export(
 
       if (top == "[") {
         return classes+"array";
-      } else if (stack.length == 2) {
+      } else if (stack.length == 2 && allowObjects) {
         return classes+"object";
       } else {
         return classes
