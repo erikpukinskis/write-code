@@ -7,7 +7,7 @@ module.exports = library.export(
 
     function renderCode(bridge, lines) {
       prepareBridge(bridge)
-      
+
       var stack = []
 
       var linesOfHtml = lines.map(function(line) {
@@ -161,8 +161,8 @@ module.exports = library.export(
       element.style("line", {
         "font-family": "sans-serif",
         "line-height": "1.25em",
-        "margin-bottom": "0.3em",
-        "font-size": "1.33em",
+        "margin-bottom": "0.4em",
+        "font-size": "1.25em",
         "display": "block",
         "max-width": "18em",
         "border-right": "0.1em solid  #fff6f6",
