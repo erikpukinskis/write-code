@@ -7,7 +7,6 @@
     "add-html": "^0.25.0",
     "an-expression": "^0.53.0",
     "bridge-module": "*",
-    "event-stream": "^3.3.4",
     "forkable-list": "*",
     "module-library": "^0.89.0",
     "parse-a-little-js": "*"

@@ -3,8 +3,8 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "write-code",
-  [library.ref(), "browser-bridge", "web-element", "bridge-module", "./edit-loop", "./editor", "a-wild-universe-appeared", "an-expression", "./render-javascript"],
-  function(lib, BrowserBridge, element, bridgeModule, editLoopXXXX, Editor, aWildUniverseAppeared, anExpression, renderJavascript) {
+  [library.ref(), "web-element", "bridge-module", "./edit-loop", "./editor", "an-expression", "./render-javascript"],
+  function(lib, element, bridgeModule, editLoopXXXX, Editor, anExpression, renderJavascript) {
 
     function prepareBridge(bridge) {
 

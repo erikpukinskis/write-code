@@ -98,6 +98,14 @@ module.exports = library.export(
         editable = nodes[0]
       }
 
+      // This is sort of where I need to be.
+
+      // write-code is feature frozen and needs to be rewritten to use render-code as its view layer...
+
+
+      // somewhere in here probs
+
+
       var introToken = Editor.symbolText(editor.getIntroSymbol(lineNumber))
       var separator = Editor.symbolText(editor.getSeparator(lineNumber))
       var outroTokens = editor.getOutroSymbols(lineNumber).map(Editor.symbolText)
