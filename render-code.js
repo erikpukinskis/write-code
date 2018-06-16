@@ -11,18 +11,38 @@ module.exports = library.export(
       var allowObjects = lines[0] == "dogs.do("
       var stack = []
 
-      var linesOfHtml = lines.map(lineEl.bind(null, stack, allowObjects, editLoop, bridge))
 
-      bridge.send(linesOfHtml.join("\n"))
+      var lines = lines.map(
+        function(line) {
+
+          var spaces = line.match(/^ */)[0].length
+          line = line.slice(spaces)
+          var width = spaces/1.5+"em"
+
+          var el = element(
+            element.tag(
+              "line"),{
+            "contenteditable": "true",
+            "onkeyup": editLoop.withArgs(
+              bridge.event)
+                .evalable()},
+            element.style({
+              "padding-left": width}),
+            lineContents(
+              stack,
+              allowObjects,
+              editLoop, bridge, line))
+
+          return el
+        }
+      )
+      bridge.send(lines)
     }
 
-    function lineEl(stack, allowObjects, editLoop, bridge, line) {
+    function lineContents(stack, allowObjects, editLoop, bridge, line) {
 
       var symbol
       var text
-      var spaces = line.match(/^ */)[0].length
-      var width = spaces/1.5+"em"
-      line = line.slice(spaces)
       var sym
       var txt
       var html = ""
@@ -67,15 +87,7 @@ module.exports = library.export(
         }
       }
 
-      var el = element(
-        element.tag("line"),{
-        "contenteditable": "true",
-        "onkeyup": editLoop.withArgs(bridge.event).evalable()},
-        element.style({
-          "padding-left": width}),
-        html)
-
-      return el.html()
+      return html
     }
 
     function literalClass(stack, sym, allowObjects) {
