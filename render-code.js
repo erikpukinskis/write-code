@@ -5,69 +5,77 @@ module.exports = library.export(
   ["web-element"],
   function(element) {
 
-    function renderCode(bridge, lines) {
+    function renderCode(bridge, lines, editLoop) {
       prepareBridge(bridge)
 
       var allowObjects = lines[0] == "dogs.do("
       var stack = []
 
-      var linesOfHtml = lines.map(function(line) {
-        var symbol
-        var text
-
-        var spaces = line.match(/^ */)[0].length
-        var width = spaces/1.5+"em"
-        line = line.slice(spaces)
-        var html = "<line style=\"padding-left: "+width+"\">"
-        var sym
-        var txt
-
-        function biteSymbol() {
-          var symbolText = grabSymbol(line)
-          if (symbolText) {
-            line = line.slice(symbolText.length)
-            return symbolText
-          }
-        }
-
-        function biteText() {
-          if (grabSymbol(line)) {
-            return
-          }
-          if (line.length > 0) {
-            var text = line.match(/^[^"}{)(=]*/)[0]
-            line = line.slice(text.length)
-            return text
-          }
-        }
-
-        while((sym = biteSymbol()) || (txt = biteText())) {
-          if (sym == "ezjs") {
-            html += "<sym class=\"logo\">ezjs</sym>"
-          } else if (sym == "*") {
-            html += "<empty></empty>"
-          } else if (sym) {
-            if (["[", "{"].includes(sym)) {
-              stack.push(sym)
-            }
-
-            html += "<sym class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
-
-            if (["}", "]"].includes(sym)) {
-              stack.pop()
-            }
-
-          } else if (txt) {
-            html += "<txt>"+txt+"</txt>"
-          }
-        }
-
-        html += "</line>"
-
-        return html
-      })
+      var linesOfHtml = lines.map(lineEl.bind(null, stack, allowObjects, editLoop, bridge))
 
       bridge.send(linesOfHtml.join("\n"))
+    }
+
+    function lineEl(stack, allowObjects, editLoop, bridge, line) {
+
+      var symbol
+      var text
+      var spaces = line.match(/^ */)[0].length
+      var width = spaces/1.5+"em"
+      line = line.slice(spaces)
+      var sym
+      var txt
+      var html = ""
+
+      function biteSymbol() {
+        var symbolText = grabSymbol(line)
+        if (symbolText) {
+          line = line.slice(symbolText.length)
+          return symbolText
+        }
+      }
+
+      function biteText() {
+        if (grabSymbol(line)) {
+          return
+        }
+        if (line.length > 0) {
+          var text = line.match(/^[^"}{)(=]*/)[0]
+          line = line.slice(text.length)
+          return text
+        }
+      }
+
+      while((sym = biteSymbol()) || (txt = biteText())) {
+        if (sym == "ezjs") {
+          html += "<sym class=\"logo\">ezjs</sym>"
+        } else if (sym == "*") {
+          html += "<empty></empty>"
+        } else if (sym) {
+          if (["[", "{"].includes(sym)) {
+            stack.push(sym)
+          }
+
+          html += "<sym class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
+
+          if (["}", "]"].includes(sym)) {
+            stack.pop()
+          }
+
+        } else if (txt) {
+          html += "<txt>"+txt+"</txt>"
+        }
+      }
+
+      var el = element(
+        element.tag("line"),{
+        "contenteditable": "true",
+        "onkeyup": editLoop.withArgs(bridge.event).evalable()},
+        element.style({
+          "padding-left": width}),
+        html)
+
+      return el.html()
     }
 
     function literalClass(stack, sym, allowObjects) {

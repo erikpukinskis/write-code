@@ -9,6 +9,8 @@ module.exports = library.export(
 
     function editLoop(editor, event) {
 
+      console.log("edit loop")
+
       if (event.key == "Enter") {
 
         editor.pressEnter(currentLine)

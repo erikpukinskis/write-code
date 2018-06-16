@@ -6,10 +6,10 @@
   "dependencies": {
     "add-html": "^0.25.0",
     "an-expression": "^0.53.0",
-    "bridge-module": "*",
-    "forkable-list": "*",
+    "bridge-module": "^0.34.0",
+    "forkable-list": "^0.24.0",
     "module-library": "^0.89.0",
-    "parse-a-little-js": "*"
+    "parse-a-little-js": "^0.11.0"
   },
   "devDependencies": {
     "a-wild-universe-appeared": "^0.35.0",
@@ -17,7 +17,7 @@
     "event-stream": "*",
     "make-request": "*",
     "run-test": "*",
-    "web-element": "*",
+    "web-element": "^0.99.0",
     "web-site": "^0.49.0"
   },
   "scripts": {
