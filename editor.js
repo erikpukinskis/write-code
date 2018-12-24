@@ -101,7 +101,6 @@ module.exports = library.export(
         editor.linesClosedOn[lineId].push(parentId)
         ensureArray(editor.outros, previousLineId)
 
-        debugger
         editor.outros[lineId].push(closerForKind(kindOfParent))
       }
 
@@ -278,7 +277,8 @@ module.exports = library.export(
       return symbolText[name]
     }
 
-    Editor.prototype.detectExpression = function(text, forRightHandSide) {
+    // Parses text and figures out what kind of expression is represented. Doesn't do anything tree-related, or have any knowledge of the tree.
+    function detectExpression(text, forRightHandSide) {
 
       var emptyMatch = text.match(/^[\s\u200b]*"?[\s\u200b]*$/)
 
@@ -327,7 +327,7 @@ module.exports = library.export(
 
       } else if (isVariableAssignment) {
         var remainder = [segments.notIdentifier, segments.outro].join("")
-        expression = this.detectExpression(remainder, true)
+        expression = detectExpression(remainder, true)
         expression.leftHandSide = segments.identifierIsh
         expression.isDeclaration = true
 
@@ -436,7 +436,7 @@ module.exports = library.export(
     Editor.prototype.text = function(lineNumber, text) {
       expectNotEqual(typeof text, "undefined", "editor.text takes a line number and a string")
 
-      var expression = this.detectExpression(text)
+      var expression = detectExpression(text)
       var remainder = expression.remainder
       delete expression.remainder
 
@@ -444,11 +444,39 @@ module.exports = library.export(
 
       this.syncExpressionToLine(lineNumber, expression)
 
+      if (remainder == ")") {
+        debugger
+      }
+      var remainder = this.handleClosers(
+        remainder)
+
       if (remainder) {
         lineNumber++
         return this.text(lineNumber, remainder)
       } else {
         return lineNumber
+      }
+    }
+
+    Editor.prototype.handleClosers = function(remainder) {
+      if (!remainder) {
+        return }
+      var handledCount = 0
+      for(var i=0; i<remainder.length; i++) {
+        var closer = remainder[i]
+        if (closer == "\"") {
+          handledCount++
+          continue
+        } else if (closer == "]") {
+          throw new Error("find the array and close it.")
+        } else if (closer == "}") {
+          throw new Error("find the function and close it.")
+        } else if (closer == ")") {
+          debugger
+          throw new Error("find the call and close it.")
+        } else {
+          return remainder.slice(handledCount)
+        }
       }
     }
 

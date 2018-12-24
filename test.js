@@ -1,5 +1,19 @@
 var runTest = require("run-test")(require)
 
+// runTest.only("remainder from string expression is nothing")
+
+runTest(
+  "remainder from string expression is nothing",[
+  "./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var lineNumber = editor.text(0, 
+      "\"hi\"")
+    expect(lineNumber).to.equal(0)
+    done()
+  })
+
+
 runTest(
   "import function call",
   ["./editor", "an-expression"],
@@ -382,6 +396,7 @@ runTest(
     done.ish("call inside literal inside call closes properly")
 
     editor.text(4, "hi)})")
+    editor.dump()
     expectSymbols(4, "quote", undefined, ["quote", "right-paren", "curly-close", "right-paren"])
     done.ish("quote string four levels deep")
 
