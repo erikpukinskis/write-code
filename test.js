@@ -1,6 +1,7 @@
 var runTest = require("run-test")(require)
 
-// runTest.only("remainder from string expression is nothing")
+runTest.only(
+  "updating from source")
 
 runTest(
   "remainder from string expression is nothing",[
@@ -320,10 +321,16 @@ runTest(
     expectText(1, Editor.EMPTY)
     done.ish("first arg is empty")
 
+    debugger
     editor.text(1, "b)")
     expectSymbols(1, "quote", undefined, ["quote", "right-paren"])
     done.ish("arg can be quoted")
     expectText(1, "b")
+    done.ish("variable param gets correct text")
+    var firstLineId = editor.lineIds.get(0)
+    var secondLineId = editor.lineIds.get(1)
+    expect(editor.linesClosedOn[secondLineId]).to.include(firstLineId)
+    done.ish("call gets closed")
 
     editor.text(1, "\"browser-bridge\")")
     expectSymbols(1, "quote", undefined, ["quote", "right-paren"])

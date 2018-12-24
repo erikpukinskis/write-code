@@ -5,6 +5,8 @@ module.exports = library.export(
   ["forkable-list", "an-expression", "parse-a-little-js"],
   function(forkableList, anExpression, parseALittleJs) {
 
+    // This probably shouldn't take a tree as an argument. It should expose some hooks, and when we wire up a tree, we should indicate how those hooks affect the tree. In general I don't think Editor should think about whether a tree exists.
+
     function Editor(tree) {
       this.tree = tree
       this.intros = {}
@@ -444,11 +446,9 @@ module.exports = library.export(
 
       this.syncExpressionToLine(lineNumber, expression)
 
-      if (remainder == ")") {
-        debugger
-      }
+      var lineId = this.lineIds.get(lineNumber)
       var remainder = this.handleClosers(
-        remainder)
+        remainder, lineId)
 
       if (remainder) {
         lineNumber++
@@ -458,15 +458,28 @@ module.exports = library.export(
       }
     }
 
-    Editor.prototype.handleClosers = function(remainder) {
+    Editor.prototype.handleClosers = function(remainder, lineId) {
       if (!remainder) {
         return }
       var handledCount = 0
+      var alreadyClosed = this.linesClosedOn[lineId]
+      var confirmedCount = 0
+
       for(var i=0; i<remainder.length; i++) {
         var closer = remainder[i]
+        var nextCloser = null
+        if (alreadyClosed) {
+          var nextClosedLineId = alreadyClosed[confirmedCount]
+          if (nextClosedLineId) {
+            var nextCloser = symbolText[this.
+            howToClose[nextClosedLineId]]
+          }
+        }
         if (closer == "\"") {
           handledCount++
           continue
+        } else if (closer == nextCloser) {
+          confirmedCount++
         } else if (closer == "]") {
           throw new Error("find the array and close it.")
         } else if (closer == "}") {
