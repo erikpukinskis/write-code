@@ -383,20 +383,16 @@ module.exports = library.export(
         throw new Error("trying to add an expression for a line without an id")
       }
 
-      if (!this.tree) {
-        return
-      }
-
       var staleExpression = this.expressions[lineId]
 
       if (staleExpression == null) {
         var parentId = this.parents[lineId] || this.rootFunctionId
 
-        this.tree.addToParent(parentId, expression)
+        this.tree && this.tree.addToParent(parentId, expression)
         this.expressions[lineId] = expression
 
       } else if (expression.kind != staleExpression.kind) {
-        this.tree.insertExpression(expression, "inPlaceOf", staleExpression.id)
+        this.tree && this.tree.insertExpression(expression, "inPlaceOf", staleExpression.id)
         this.expressions[lineId] = expression
 
       } else {
@@ -406,7 +402,7 @@ module.exports = library.export(
           var key = keys[i]
 
           if (staleExpression[key] != expression[key]) {
-            this.tree.setAttribute(key, staleExpression.id, expression[key])}
+            this.tree && this.tree.setAttribute(key, staleExpression.id, expression[key])}
             staleExpression[key] = expression[key]
         }
       }
@@ -415,6 +411,7 @@ module.exports = library.export(
     }
 
     function doubleCheckIds(editor, tree) {
+      if (!tree) { return }
       for(var index=0; index<editor.expressions.length; index++) {
 
         var idFromEditor = editor.expressions.get(index).id
@@ -667,6 +664,8 @@ module.exports = library.export(
       }
       return false
     }
+
+    Editor.detectExpression = detectExpression
 
     return Editor
   }
