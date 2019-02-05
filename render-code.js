@@ -138,11 +138,11 @@ module.exports = library.export(
       element.style("sym", {
         "text-indent": "0",
         "text-align": "center",
-        "width": "0.66em",
+        "width": "1em",
         "font-weight": "bold",
         "background-color": "#f6f6ff",
         "color": "#7c7cfa",
-        "border-radius": "0.1em",
+        "border-radius": "0.2em",
       }),
 
       element.style("sym.text, sym.logo", {
@@ -167,13 +167,15 @@ module.exports = library.export(
 
       element.style("sym, empty", {
         "display": "inline-block",
-        "margin-left": "0.2em",
-        "margin-right": "0.2em",
+        "margin-left": "0.1em",
+        "margin-right": "0.1em",
       }),
 
       element.style("empty", {
-        "width": "0.66em",
-        "height": "0.66em",
+        "width": "0.7em",
+        "margin-left": "0.4em",
+        "margin-right": "0.4em",
+        "height": "0.7em",
         "box-sizing": "border-box",
         "border-radius": "0.22em",
         "border": "0.1em solid #ddd",
@@ -192,11 +194,11 @@ module.exports = library.export(
 
       element.style("line", {
         "font-family": "sans-serif",
-        "line-height": "1.25em",
+        "line-height": "1.3em",
         "margin-bottom": "0.4em",
-        "font-size": "1.25em",
+        "font-size": "1.4em",
         "display": "block",
-        "max-width": "18em",
+        "max-width": "20em",
         "box-sizing": "border-box",
         "text-indent": "-1.4em",
       }),
