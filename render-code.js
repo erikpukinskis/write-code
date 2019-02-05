@@ -2,8 +2,10 @@ var library = require("module-library")(require)
 
 module.exports = library.export(
   "render-code",
+
   // Takes a bunch of text, parses it out
   // fairly simply, and draws elements
+
   ["web-element"],
   function(element) {
 
@@ -23,11 +25,7 @@ module.exports = library.export(
 
           var el = element(
             element.tag(
-              "line"),{
-            "contenteditable": "true",
-            "onkeyup": editLoop.withArgs(
-              bridge.event)
-                .evalable()},
+              "line"),
             element.style({
               "padding-left": width}),
             lineContents(
@@ -38,7 +36,18 @@ module.exports = library.export(
           return el
         }
       )
-      bridge.send(lines)
+
+      var handleEdits = editLoop.withArgs(
+        bridge.event)
+        .evalable()
+
+      var program = element(
+        ".editable",{
+        "contenteditable": "true",
+        "onkeyup": handleEdits},
+        lines)
+
+      bridge.send(program)
     }
 
     function lineContents(stack, allowObjects, editLoop, bridge, line) {
@@ -132,7 +141,7 @@ module.exports = library.export(
         "width": "0.66em",
         "font-weight": "bold",
         "background-color": "#f6f6ff",
-        "color": "#99b",
+        "color": "#7c7cfa",
         "border-radius": "0.1em",
       }),
 
@@ -143,11 +152,11 @@ module.exports = library.export(
       }),
 
       element.style("sym.array", {
-        "color": "#9ce",
+        "color": "#79caff",
       }),
 
       element.style("sym.object", {
-        "color": "#b83",
+        "color": "#ff9f00",
       }), 
 
       element.style("sym.logo", {
@@ -176,7 +185,7 @@ module.exports = library.export(
       }),
 
       element.style("txt", {
-        "color": "#222",
+        "color": "#635d5a",
         "-webkit-font-smoothing": "antialiased",
         "display": "inline",
       }),
@@ -188,7 +197,6 @@ module.exports = library.export(
         "font-size": "1.25em",
         "display": "block",
         "max-width": "18em",
-        "border-right": "0.1em solid  #fff6f6",
         "box-sizing": "border-box",
         "text-indent": "-1.4em",
       }),
