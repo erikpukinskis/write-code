@@ -194,9 +194,9 @@ module.exports = library.export(
 
       element.style("line", {
         "font-family": "sans-serif",
-        "line-height": "1.3em",
+        "line-height": "1.2em",
         "margin-bottom": "0.4em",
-        "font-size": "1.4em",
+        "font-size": "1.3em",
         "display": "block",
         "max-width": "20em",
         "box-sizing": "border-box",
