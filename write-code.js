@@ -22,11 +22,11 @@ library.using([
       "      *)",
       "    dogs.start(",
       "      3433,{",
-      "      \"go\":\"go go\"})",
-      "     browserBridge(",
-      "       ).forResponse(",
-      "         response)})",
-      "         ezjs",
+      "      \"go\":\"go go\"},",
+      "      browserBridge(",
+      "        ).forResponse(",
+      "          response))})",
+      "          ezjs",
     ]
 
     var basicSite = [
@@ -51,7 +51,6 @@ library.using([
       "            response)",
       "        bridge.send(",
       "          page)})})",
-      "          *",
       "          ezjs",
     ]
 
