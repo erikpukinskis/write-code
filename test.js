@@ -1,7 +1,48 @@
 var runTest = require("run-test")(require)
 
-runTest.only(
-  "updating from source")
+
+runTest(
+  "multiple arguments",[
+  "./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var lineNumber = editor.text(0, 
+      "someFunction(")
+    expect(lineNumber).to.equal(1)
+
+    lineNumber = editor.text(1, "some string")
+    expect(lineNumber).to.equal(1)
+
+    lineNumber = editor.text(1, "some string,")
+    expect(lineNumber).to.equal(2)
+
+    done()
+  })
+
+
+
+runTest(
+  "array arguments",[
+  "./editor"],
+  function(expect, done, Editor) {
+    var editor = new Editor()
+    var lineNumber = editor.text(0, 
+      "someFunction(")
+    expect(lineNumber).to.equal(1)
+
+    lineNumber = editor.text(0, "someFunction([")
+    expect(lineNumber).to.equal(1)
+
+    var callId = editor.lineIds.get(0)
+    var editor.outros[callId].to.deep.equal(["(","["])
+
+    // need to start worrying about which expressions are closed where here, but we don't have the data structures for that yet.
+    
+    done()
+  })
+
+
+
 
 runTest(
   "remainder from string expression is nothing",[
@@ -321,7 +362,6 @@ runTest(
     expectText(1, Editor.EMPTY)
     done.ish("first arg is empty")
 
-    debugger
     editor.text(1, "b)")
     expectSymbols(1, "quote", undefined, ["quote", "right-paren"])
     done.ish("arg can be quoted")
@@ -365,12 +405,8 @@ runTest(
     // expectCursor(2, 1)
     expectText(3, Editor.EMPTY)
     done.ish("first line is empty")
-
-    editor.text(2, "function(){")
-    expectSymbols(2, "quote", undefined, ["quote"])
-    expectText(2, "function")
-    done.ish("messed up function literals don't get mistaken for function calls")
     
+    debugger
     editor.text(2, "function s(){")
     expectSymbols(2, "function", "arguments-open", ["arguments-close", "curly-open"])
     expectText(2, " s", Editor.EMPTY)

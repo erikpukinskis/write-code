@@ -27,11 +27,20 @@ module.exports = library.export(
       if (tree) {
         tree.expressionIds.forEach(
           function(lineId, lineNumber) {
-            importLine(editor, tree, lineId, lineNumber)})
+            importTreeExpression(editor, tree, lineId, lineNumber)})
       }
     }
 
-    function importLine(editor, tree, lineId, lineNumber) {
+    Editor.prototype.importLines =  function(lines) {
+      var lineNumber = this.lineIds.length
+      var editor = this
+      lines.forEach(function(text) {
+        editor.text(lineNumber, text)
+        lineNumber++
+      })
+    }
+
+    function importTreeExpression(editor, tree, lineId, lineNumber) {
 
       editor.lineIds.set(lineNumber, lineId)
 
@@ -279,69 +288,6 @@ module.exports = library.export(
       return symbolText[name]
     }
 
-    // Parses text and figures out what kind of expression is represented. Doesn't do anything tree-related, or have any knowledge of the tree.
-    function detectExpression(text, forRightHandSide) {
-
-      var emptyMatch = text.match(/^[\s\u200b]*"?[\s\u200b]*$/)
-
-      if (emptyMatch) {
-        return anExpression.emptyExpression()
-      }
-
-      var segments = parseALittleJs(text)
-
-      var expression = {
-        remainder: segments.remainder
-      }
-
-      var outro = segments.outro && segments.outro.split("") || []
-
-      var isFunctionLiteral = introName(segments) == "function"
-
-      var isFunctionCall = !isFunctionLiteral && segments.outro && !!segments.outro.match(/^\([^{]*$/)
-
-      var isVariableAssignment = !isFunctionCall && introName(segments) == "var"
-
-      var isStringLiteral = !isVariableAssignment
-
-      if (isVariableAssignment && forRightHandSide) {
-        expression.kind = "string literal"
-        expression.string = segments.middle
-
-      } else if (isFunctionLiteral) {
-        expression.kind = "function literal"
-        expression.functionName = segments.identifierIsh
-
-        if (segments.argumentSignature) {
-          expression.argumentNames = segments.argumentSignature.split(/\s*,\s*/)
-        }
-
-      } else if (isFunctionCall) {
-        expression.kind = "function call"
-
-        if (segments.separator) {
-          expression.functionName = segments.notIdentifier
-          expression.leftHandSide = segments.identifierIsh
-
-        } else {
-          expression.functionName = segments.identifierIsh
-        }
-
-      } else if (isVariableAssignment) {
-        var remainder = [segments.notIdentifier, segments.outro].join("")
-        expression = detectExpression(remainder, true)
-        expression.leftHandSide = segments.identifierIsh
-        expression.isDeclaration = true
-
-      } else if (isStringLiteral) {
-        expression.kind = "string literal"
-        expression.string = segments.middle
-      }
-
-
-      return expression
-    }
-
     function introName(segments) {
       var intro = segments.intro
 
@@ -380,7 +326,8 @@ module.exports = library.export(
       expression.id = lineId
 
       if (!lineId) {
-        throw new Error("trying to add an expression for a line without an id")
+        debugger
+        throw new Error("trying to add text at line "+lineNumber+" but there's no line there")
       }
 
       var staleExpression = this.expressions[lineId]
@@ -435,9 +382,19 @@ module.exports = library.export(
     Editor.prototype.text = function(lineNumber, text) {
       expectNotEqual(typeof text, "undefined", "editor.text takes a line number and a string")
 
-      var expression = detectExpression(text)
+      var segments = parseALittleJs(text)
+
+      var expression = parseALittleJs.detectExpression(segments)
+
+      _wtf.json(expression)
+      debugger
       var remainder = expression.remainder
       delete expression.remainder
+
+      if (expression.kind == "leaf expression") {
+        // this is where we would look up in the tree if we've seen that identifier before
+        expression.kind = "string literal"
+      }
 
       this.noticeExpressionAt(lineNumber, expression)
 
@@ -664,8 +621,6 @@ module.exports = library.export(
       }
       return false
     }
-
-    Editor.detectExpression = detectExpression
 
     return Editor
   }

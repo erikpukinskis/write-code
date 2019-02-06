@@ -9,8 +9,9 @@ library.using([
   "bridge-module",
   "./edit-loop",
   "a-wild-universe-appeared",
-  "an-expression"],
-  function(lib, renderCode, WebSite, BrowserBridge, element, bridgeModule, xxx, aWildUniverseAppeared, anExpression) {
+  "an-expression",
+  "./editor"],
+  function(lib, renderCode, WebSite, BrowserBridge, element, bridgeModule, xxx, aWildUniverseAppeared, anExpression, Editor) {
 
     var stylesheet = [
       "dogs.do(",
@@ -59,6 +60,9 @@ library.using([
     var universe = aWildUniverseAppeared()
 
     var tree = anExpression.tree()
+
+    var editor = new Editor(tree)
+    editor.importLines(stylesheet)
 
     var editorBinding = baseBridge.defineSingleton(
       "editor",[

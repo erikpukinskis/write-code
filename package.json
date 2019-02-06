@@ -9,7 +9,7 @@
     "bridge-module": "^0.34.0",
     "forkable-list": "^0.24.0",
     "module-library": "^0.89.0",
-    "parse-a-little-js": "^0.11.0"
+    "parse-a-little-js": "^0.23.0"
   },
   "devDependencies": {
     "a-wild-universe-appeared": "^0.35.0",
