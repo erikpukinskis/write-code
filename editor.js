@@ -332,7 +332,14 @@ module.exports = library.export(
 
       var staleExpression = this.expressions[lineId]
 
-      if (staleExpression == null) {
+      if (expression.kind == "empty expression") {
+        if (this.expressions[lineId]) {
+          throw new Error("trying to notice an empty expression where there already is something")
+        } else {
+          // do nothing
+        }
+
+      } else if (staleExpression == null) {
         var parentId = this.parents[lineId] || this.rootFunctionId
 
         this.tree && this.tree.addToParent(parentId, expression)

@@ -13,56 +13,59 @@ library.using([
   "./editor"],
   function(lib, renderCode, WebSite, BrowserBridge, element, bridgeModule, xxx, aWildUniverseAppeared, anExpression, Editor) {
 
-    var stylesheet = [
-      "dogs.do(",
-      "  \"laugh\",[",
-      "  \"one\",",
-      "  \"two. two Two they function they drop a line or two\"],",
-      "  function*(this, that, theOther) {",
-      "    var bone =newTreat(",
-      "      *)",
-      "    dogs.start(",
-      "      3433,{",
-      "      \"go\":\"go go\"},",
-      "      browserBridge(",
-      "        ).forResponse(",
-      "          response))})",
-      "          ezjs",
-    ]
+    // var stylesheet = [
+    //   "dogs.do(",
+    //   "  \"laugh\",[",
+    //   "  \"one\",",
+    //   "  \"two. two Two they function they drop a line or two\"],",
+    //   "  function*(this, that, theOther) {",
+    //   "    var bone =newTreat(",
+    //   "      *)",
+    //   "    dogs.start(",
+    //   "      3433,{",
+    //   "      \"go\":\"go go\"},",
+    //   "      browserBridge(",
+    //   "        ).forResponse(",
+    //   "          response))})",
+    //   "          ezjs",
+    // ]
 
-    var basicSite = [
-      "library.define(",
-      "  \"hello world\",[",
-      "  \"web-site\",",
-      "  \"web-element\",",
-      "  \"browser-bridge\"],",
-      "  function*(WebSite, element, BrowserBridge) {",
-      "    var site =newWebSite(",
-      "      *)",
-      "    site.start(",
-      "      3444)",
-      "    var page = element(",
-      "      \"hello world\")",
-      "    site.addRoute(",
-      "      \"get\",",
-      "      \"/\",",
-      "      function*(_, response) {",
-      "        var bridge =newBrowserBridge(",
-      "          ).forResponse(",
-      "            response)",
-      "        bridge.send(",
-      "          page)})})",
-      "          ezjs",
-    ]
+    // var basicSite = [
+    //   "library.define(",
+    //   "  \"hello world\",[",
+    //   "  \"web-site\",",
+    //   "  \"web-element\",",
+    //   "  \"browser-bridge\"],",
+    //   "  function*(WebSite, element, BrowserBridge) {",
+    //   "    var site =newWebSite(",
+    //   "      *)",
+    //   "    site.start(",
+    //   "      3444)",
+    //   "    var page = element(",
+    //   "      \"hello world\")",
+    //   "    site.addRoute(",
+    //   "      \"get\",",
+    //   "      \"/\",",
+    //   "      function*(_, response) {",
+    //   "        var bridge =newBrowserBridge(",
+    //   "          ).forResponse(",
+    //   "            response)",
+    //   "        bridge.send(",
+    //   "          page)})})",
+    //   "          ezjs",
+    // ]
 
+    var empty = ["hello world"]
     var baseBridge = new BrowserBridge()
 
-    var universe = aWildUniverseAppeared()
+    var universe = aWildUniverseAppeared(
+      "just-this-one",{
+      anExpression: anExpression})
 
     var tree = anExpression.tree()
-
+    tree.logTo(universe, true)
     var editor = new Editor(tree)
-    editor.importLines(stylesheet)
+    editor.importLines(empty)
 
     var editorBinding = baseBridge.defineSingleton(
       "editor",[
@@ -88,9 +91,11 @@ library.using([
         var bridge = baseBridge.forResponse(response)
 
         var left = bridge.partial()
-        var right = bridge.partial()
-        renderCode(left, stylesheet, editLoop)
-        renderCode(right, basicSite, editLoop)
+
+        renderCode(left, empty, editLoop)
+
+        // renderCode(left, stylesheet, editLoop)
+        // renderCode(right, basicSite, editLoop)
 
         left = element(element.style({
           "margin-right": "100px",
@@ -101,7 +106,8 @@ library.using([
             "display": "flex",
           }),[
           left,
-          right])
+          // right,
+          ])
 
         bridge.send(page)
       }
