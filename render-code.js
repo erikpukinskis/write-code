@@ -135,6 +135,11 @@ module.exports = library.export(
     }
 
     var stylesheet = element.stylesheet([
+      element.style(".editable",{
+        "min-width": "20em",
+        "min-height": "4em",
+      }),
+
       element.style("sym", {
         "text-indent": "0",
         "text-align": "center",
@@ -200,7 +205,6 @@ module.exports = library.export(
         "display": "block",
         "max-width": "20em",
         "box-sizing": "border-box",
-        "text-indent": "-1.4em",
       }),
 
       element.style("body", {

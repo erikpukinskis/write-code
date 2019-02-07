@@ -80,7 +80,7 @@ library.using([
       }
     )
 
-    var editLoop = bridgeModule(lib, "edit-loop", baseBridge).withArgs(baseBridge.event)
+    var editLoop = bridgeModule(lib, "edit-loop", baseBridge).withArgs(editorBinding, baseBridge.event)
 
     var site = new WebSite()
     site.start(1110)
@@ -89,6 +89,12 @@ library.using([
       "/",
       function(request, response) {
         var bridge = baseBridge.forResponse(response)
+
+        bridge.domReady(
+          function() {
+            document.querySelector(".editable").focus()
+            console.log("ya!")
+          })
 
         var left = bridge.partial()
 

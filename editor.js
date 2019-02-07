@@ -393,8 +393,6 @@ module.exports = library.export(
 
       var expression = parseALittleJs.detectExpression(segments)
 
-      _wtf.json(expression)
-      debugger
       var remainder = expression.remainder
       delete expression.remainder
 
