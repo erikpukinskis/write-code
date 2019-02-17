@@ -19,16 +19,17 @@ module.exports = library.export(
       var lines = lines.map(
         function(line) {
 
-          var spaces = line.match(/^ */)[0].length
-          line = line.slice(spaces)
-          var width = spaces/1.5+"em"
+          var spaces = line.match(/^ */)[0]
+          var nonbreakingSpaces = "<indent>"+spaces.split("").map(function() { return "&nbsp;"}).join("")+"</indent>"
+
+          line = line.slice(spaces.length)
+          var width = spaces.length/1.5+"em"
 
           var el = element(
             element.tag(
               "line"),{
             "contenteditable": "true"},
-            element.style({
-              "padding-left": width}),
+            nonbreakingSpaces,
             lineContents(
               stack,
               allowObjects,
@@ -93,7 +94,7 @@ module.exports = library.export(
         if (sym == "ezjs") {
           html += "<sym contenteditable=\"true\" spellcheck=\"false\" class=\"logo\">ezjs</sym>"
         } else if (sym == "*") {
-          html += "<empty contenteditable=\"true\"></empty>"
+          html += "<empty contenteditable=\"true\"> </empty>"
         } else if (sym) {
           if (["[", "{"].includes(sym)) {
             stack.push(sym)
@@ -106,7 +107,9 @@ module.exports = library.export(
           }
 
         } else if (txt) {
-          html += "<txt contenteditable=\"true\">"+txt+"</txt>"
+          var isLogo = txt == " ezjs"
+          var spelling = isLogo ? " spellcheck=\"false\"" : ""
+          html += "<txt"+spelling+" contenteditable=\"true\">"+txt+"</txt>"
         }
       }
 
@@ -150,23 +153,34 @@ module.exports = library.export(
       }
     }
 
+    var SYM_PADDING = "8px"
+
     var stylesheet = element.stylesheet([
       element.style(".editable-container",{
-        "min-width": "20em",
+        "min-width": "16em",
+        "max-width": "24em",
         "min-height": "4em",
       }),
 
       element.style(".editable",{
-        "padding": "0.4em 0.4em 0.4em 2.0em",
+        "padding": "0.4em 0.4em 0.4em 4.4em",
       }),
 
       element.style(".editable sym, .editable sym.text, sym.array, .editable txt", {
       }),
 
+      element.style("indent", {
+        "display": "inline",
+        "letter-spacing": "0.25em",
+      }),
+
       element.style("sym", {
         "text-indent": "0",
-        "text-align": "center",
         "width": "1em",
+        "margin": "0 0.15em",
+        "border-left": SYM_PADDING+" solid #f6f6ff",
+        "border-right": SYM_PADDING+" solid #f6f6ff",
+        "text-align": "center",
         "font-weight": "bold",
         "background-color": "#f6f6ff",
         "color": "#7c7cfa",
@@ -185,6 +199,8 @@ module.exports = library.export(
       element.style("sym.text.comment",{
         "color": "white",
         "background": "#fbb",
+        "border-left": SYM_PADDING+" solid #fbb",
+        "border-right": SYM_PADDING+" solid #fbb",
         "padding": "0 5px 0 8px",
         "letter-spacing": "3px",
       }),
@@ -211,18 +227,14 @@ module.exports = library.export(
       element.style("sym.text, sym.logo", {
         "width": "auto",
         "height": "1.25em",
-        "padding": "0 0.4em",
       }),
 
       element.style("empty", {
-        "display": "inline-block",
-        "width": "0.7em",
-        "margin-left": "0.4em",
-        "margin-right": "0.4em",
-        "height": "0.7em",
-        "box-sizing": "border-box",
-        "border-radius": "0.22em",
-        "border": "0.1em solid #ddd",
+        "letter-spacing": "0.9em",
+        "font-size": "0.5em",
+        "vertical-align": "0.3em",
+        "border-radius": "5px",
+        "border": "3px solid #ddd",
       }),
 
 
@@ -241,9 +253,8 @@ module.exports = library.export(
         "flex-direction": "row",
 
         "margin-bottom": "0.4em",
-        "text-indent": "-1.2em",
+        "text-indent": "-2.86em",
         "line-height": "1.2em",
-        "max-width": "20em",
 
         "font-family": "sans-serif",
         "font-size": "1.3em",
