@@ -28,7 +28,7 @@ library.using([
       "      browserBridge(",
       "        ).forResponse(",
       "          response))})",
-      "          ezjs",
+      "// ezjs",
     ]
 
     // var basicSite = [

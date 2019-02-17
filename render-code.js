@@ -25,7 +25,8 @@ module.exports = library.export(
 
           var el = element(
             element.tag(
-              "line"),
+              "line"),{
+            "contenteditable": "true"},
             element.style({
               "padding-left": width}),
             lineContents(
@@ -50,7 +51,9 @@ module.exports = library.export(
         "onkeyup": handleEdits},
         lines)
 
-      bridge.send(program)
+      bridge.send(
+        element(".editable-container",
+          program))
     }
 
     function lineContents(stack, allowObjects, editLoop, bridge, line) {
@@ -88,22 +91,22 @@ module.exports = library.export(
         lastSym = sym || lastSym
 
         if (sym == "ezjs") {
-          html += "<sym class=\"logo\">ezjs</sym>"
+          html += "<sym contenteditable=\"true\" spellcheck=\"false\" class=\"logo\">ezjs</sym>"
         } else if (sym == "*") {
-          html += "<empty></empty>"
+          html += "<empty contenteditable=\"true\"></empty>"
         } else if (sym) {
           if (["[", "{"].includes(sym)) {
             stack.push(sym)
           }
 
-          html += "<sym class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
+          html += "<sym contenteditable=\"true\" class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
 
           if (["}", "]"].includes(sym)) {
             stack.pop()
           }
 
         } else if (txt) {
-          html += "<txt>"+txt+"</txt>"
+          html += "<txt contenteditable=\"true\">"+txt+"</txt>"
         }
       }
 
@@ -148,9 +151,16 @@ module.exports = library.export(
     }
 
     var stylesheet = element.stylesheet([
-      element.style(".editable",{
+      element.style(".editable-container",{
         "min-width": "20em",
         "min-height": "4em",
+      }),
+
+      element.style(".editable",{
+        "padding": "0.4em 0.4em 0.4em 2.0em",
+      }),
+
+      element.style(".editable sym, .editable sym.text, sym.array, .editable txt", {
       }),
 
       element.style("sym", {
@@ -179,12 +189,6 @@ module.exports = library.export(
         "letter-spacing": "3px",
       }),
 
-      element.style("sym.text, sym.logo", {
-        "width": "auto",
-        "padding-left": "0.2em",
-        "padding-right": "0.2em",
-      }),
-
       element.style("sym.array", {
         "color": "#79caff",
       }),
@@ -200,12 +204,18 @@ module.exports = library.export(
       }),
 
       element.style("sym, empty", {
-        "display": "inline-block",
-        "margin-left": "0.1em",
-        "margin-right": "0.1em",
+        "display": "inline",
+        "height": "1.25em",
+      }),
+
+      element.style("sym.text, sym.logo", {
+        "width": "auto",
+        "height": "1.25em",
+        "padding": "0 0.4em",
       }),
 
       element.style("empty", {
+        "display": "inline-block",
         "width": "0.7em",
         "margin-left": "0.4em",
         "margin-right": "0.4em",
@@ -227,13 +237,16 @@ module.exports = library.export(
       }),
 
       element.style("line", {
-        "font-family": "sans-serif",
-        "line-height": "1.2em",
-        "margin-bottom": "0.4em",
-        "font-size": "1.3em",
         "display": "block",
+        "flex-direction": "row",
+
+        "margin-bottom": "0.4em",
+        "text-indent": "-1.2em",
+        "line-height": "1.2em",
         "max-width": "20em",
-        "box-sizing": "border-box",
+
+        "font-family": "sans-serif",
+        "font-size": "1.3em",
       }),
 
       element.style("body", {
