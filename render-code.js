@@ -27,8 +27,7 @@ module.exports = library.export(
 
           var el = element(
             element.tag(
-              "line"),{
-            "contenteditable": "true"},
+              "line"),
             nonbreakingSpaces,
             lineContents(
               stack,
@@ -37,6 +36,10 @@ module.exports = library.export(
 
           if (line.match(/^\s*\/\//)) {
             el.addSelector(".comment")
+          }
+          if (line.match(/\/\/ ezjs/)) {
+            el.addSelector(".logo")
+            el.addAttribute("contenteditable", "false")
           }
           return el
         }
@@ -100,7 +103,7 @@ module.exports = library.export(
             stack.push(sym)
           }
 
-          html += "<sym contenteditable=\"true\" class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
+          html += "<sym class=\""+literalClass(stack, sym, allowObjects)+"\">"+sym+"</sym>"
 
           if (["}", "]"].includes(sym)) {
             stack.pop()
@@ -109,7 +112,7 @@ module.exports = library.export(
         } else if (txt) {
           var isLogo = txt == " ezjs"
           var spelling = isLogo ? " spellcheck=\"false\"" : ""
-          html += "<txt"+spelling+" contenteditable=\"true\">"+txt+"</txt>"
+          html += "<txt"+spelling+">"+txt+"</txt>"
         }
       }
 
@@ -154,6 +157,7 @@ module.exports = library.export(
     }
 
     var SYM_PADDING = "8px"
+    var LOGO_COLOR = "red"
 
     var stylesheet = element.stylesheet([
       element.style(".editable-container",{
@@ -210,13 +214,17 @@ module.exports = library.export(
       }),
 
       element.style("sym.object", {
-        "color": "#ff9f00",
+        "color": "#79caff",
       }), 
 
-      element.style("sym.logo", {
-        "margin-top": "1em",
-        "line-height": "1.2em",
-        "font-size": "130%",
+      element.style("line.logo sym.text.comment",{
+        "margin-top": "2em",
+        "background": "#e5eeff",
+        "border-color": "#e5eeff",
+      }),
+
+      element.style("line.logo txt",{
+        "color": "#c6d4ef",
       }),
 
       element.style("sym, empty", {
