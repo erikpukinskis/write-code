@@ -178,9 +178,12 @@ module.exports = library.export(
         "letter-spacing": "0.25em",
       }),
 
+      element.style("indent + sym", {
+        "margin-left": "-0.3em",
+      }),
+
       element.style("sym", {
-        "text-indent": "0",
-        "width": "1em",
+        "display": "inline",
         "margin": "0 0.15em",
         "border-left": SYM_PADDING+" solid #f6f6ff",
         "border-right": SYM_PADDING+" solid #f6f6ff",
@@ -192,7 +195,7 @@ module.exports = library.export(
       }),
 
       element.style("line.comment",{
-        "margin": "1.4em 0 1.5em 1.6em",
+        "margin": "1.4em 0 1.5em 0em",
       }),
 
       element.style("line.comment txt",{
@@ -227,16 +230,6 @@ module.exports = library.export(
         "color": "#c6d4ef",
       }),
 
-      element.style("sym, empty", {
-        "display": "inline",
-        "height": "1.25em",
-      }),
-
-      element.style("sym.text, sym.logo", {
-        "width": "auto",
-        "height": "1.25em",
-      }),
-
       element.style("empty", {
         "letter-spacing": "0.9em",
         "font-size": "0.5em",
@@ -261,7 +254,7 @@ module.exports = library.export(
         "flex-direction": "row",
 
         "margin-bottom": "0.4em",
-        "text-indent": "-2.86em",
+        "text-indent": "-2.15em",
         "line-height": "1.2em",
 
         "font-family": "sans-serif",
