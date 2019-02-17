@@ -8,7 +8,7 @@ module.exports = library.export(
     var currentLine = 0
 
     function editLoop(editor, event) {
-
+      return
       console.log("edit loop")
 
       if (event.key == "Enter") {

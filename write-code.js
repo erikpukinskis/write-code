@@ -13,22 +13,23 @@ library.using([
   "./editor"],
   function(lib, renderCode, WebSite, BrowserBridge, element, bridgeModule, xxx, aWildUniverseAppeared, anExpression, Editor) {
 
-    // var stylesheet = [
-    //   "dogs.do(",
-    //   "  \"laugh\",[",
-    //   "  \"one\",",
-    //   "  \"two. two Two they function they drop a line or two\"],",
-    //   "  function*(this, that, theOther) {",
-    //   "    var bone =newTreat(",
-    //   "      *)",
-    //   "    dogs.start(",
-    //   "      3433,{",
-    //   "      \"go\":\"go go\"},",
-    //   "      browserBridge(",
-    //   "        ).forResponse(",
-    //   "          response))})",
-    //   "          ezjs",
-    // ]
+    var stylesheet = [
+      "dogs.do(",
+      "  \"laugh\",[",
+      "  \"one\",",
+      "  \"two. two Two they function they drop a line or two\"],",
+      "  // wasn't that a long string?",
+      "  function*(this, that, theOther) {",
+      "    var bone =newTreat(",
+      "      *)",
+      "    dogs.start(",
+      "      3433,{",
+      "      \"go\":\"go go\"},",
+      "      browserBridge(",
+      "        ).forResponse(",
+      "          response))})",
+      "          ezjs",
+    ]
 
     // var basicSite = [
     //   "library.define(",
@@ -98,9 +99,9 @@ library.using([
 
         var left = bridge.partial()
 
-        renderCode(left, empty, editLoop)
+        // renderCode(left, empty, editLoop)
 
-        // renderCode(left, stylesheet, editLoop)
+        renderCode(left, stylesheet, editLoop)
         // renderCode(right, basicSite, editLoop)
 
         left = element(element.style({

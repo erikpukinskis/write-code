@@ -33,6 +33,9 @@ module.exports = library.export(
               allowObjects,
               editLoop, bridge, line))
 
+          if (line.match(/^\s*\/\//)) {
+            el.addSelector(".comment")
+          }
           return el
         }
       )
@@ -60,6 +63,9 @@ module.exports = library.export(
 
       function biteSymbol() {
         var symbolText = grabSymbol(line)
+        if (symbolText == "//") {
+          debugger
+        }
         if (symbolText) {
           line = line.slice(symbolText.length)
           return symbolText
@@ -77,7 +83,10 @@ module.exports = library.export(
         }
       }
 
+      var lastSym
       while((sym = biteSymbol()) || (txt = biteText())) {
+        lastSym = sym || lastSym
+
         if (sym == "ezjs") {
           html += "<sym class=\"logo\">ezjs</sym>"
         } else if (sym == "*") {
@@ -108,6 +117,10 @@ module.exports = library.export(
         var classes = ""
       }
 
+      if (sym == "//") {
+        return classes + " comment"
+      }
+
       var top = stack[stack.length-1]
       var b = Math.max(255,stack.length*25);
 
@@ -124,7 +137,7 @@ module.exports = library.export(
       if (line == ",") {
         return ","
       }
-      var parts = line.match(/^(function|var|new|ezjs)/)
+      var parts = line.match(/^(function|var|new|ezjs|\/\/)/)
       if (parts) {
         return parts[0]
       }
@@ -148,6 +161,22 @@ module.exports = library.export(
         "background-color": "#f6f6ff",
         "color": "#7c7cfa",
         "border-radius": "0.2em",
+      }),
+
+      element.style("line.comment",{
+        "margin": "1.4em 0 1.5em 1.6em",
+      }),
+
+      element.style("line.comment txt",{
+        "color": "#faa",
+        "-webkit-font-smoothing": "subpixel-antialiased",
+      }),
+
+      element.style("sym.text.comment",{
+        "color": "white",
+        "background": "#fbb",
+        "padding": "0 5px 0 8px",
+        "letter-spacing": "3px",
       }),
 
       element.style("sym.text, sym.logo", {
