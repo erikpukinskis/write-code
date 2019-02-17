@@ -39,7 +39,7 @@ module.exports = library.export(
           }
           if (line.match(/\/\/ ezjs/)) {
             el.addSelector(".logo")
-            el.addAttribute("contenteditable", "false")
+            // el.addAttribute("contenteditable", "false")
           }
           return el
         }
@@ -162,12 +162,12 @@ module.exports = library.export(
     var stylesheet = element.stylesheet([
       element.style(".editable-container",{
         "min-width": "16em",
-        "max-width": "24em",
+        "max-width": "22em",
         "min-height": "4em",
       }),
 
       element.style(".editable",{
-        "padding": "0.4em 0.4em 0.4em 4.4em",
+        "padding": "0.5em 0 0.5em 3.25em",
       }),
 
       element.style(".editable sym, .editable sym.text, sym.array, .editable txt", {

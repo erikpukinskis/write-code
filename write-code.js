@@ -20,7 +20,7 @@ library.using([
       "  \"two. two Two they function they drop a line or two\"],",
       "  // wasn't that a long string?",
       "  function*(this, that, theOther) {",
-      "    var bone =newTreat(",
+      "    var bone = new Treat(",
       "      *)",
       "    dogs.start(",
       "      3433,{",
